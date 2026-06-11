@@ -101,6 +101,8 @@ const testimonyMessage = document.querySelector("#testimony-message");
 const testimonyNote = document.querySelector("#testimony-note");
 const testimonyList = document.querySelector("#testimony-list");
 const prayerGroupList = document.querySelector("#prayer-group-list");
+const quietVideo = document.querySelector("#quiet-video");
+const quietOptions = document.querySelector(".quiet-options");
 
 const prayerGroups = [
   {
@@ -986,6 +988,16 @@ prayerGroupList.addEventListener("click", async (event) => {
 
   if (joinButton) await joinPrayerGroup(joinButton.dataset.joinGroup);
   if (prayButton) await prayInPrayerGroup(prayButton.dataset.prayGroup);
+});
+
+quietOptions.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-video]");
+  if (!option) return;
+
+  quietVideo.src = `https://www.youtube.com/embed/${option.dataset.video}`;
+  quietOptions.querySelectorAll(".quiet-option").forEach((button) => {
+    button.classList.toggle("active", button === option);
+  });
 });
 
 const initialize = async () => {

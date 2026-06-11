@@ -285,9 +285,29 @@ h2 {
   max-width: 560px;
 }
 
+.quiet-player {
+  display: grid;
+  gap: 16px;
+}
+
+.video-frame {
+  aspect-ratio: 16 / 9;
+  background: var(--teal-dark);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-frame iframe {
+  border: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
 .quiet-options {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -295,15 +315,22 @@ h2 {
   background: rgba(255, 255, 255, 0.76);
   border: 1px solid var(--line);
   border-radius: 8px;
+  cursor: pointer;
   display: grid;
   gap: 8px;
-  min-height: 140px;
-  padding: 18px;
+  min-height: 118px;
+  padding: 16px;
+  text-align: left;
 }
 
-.quiet-option:hover {
+.quiet-option:hover,
+.quiet-option.active {
   border-color: var(--gold);
   box-shadow: 0 10px 26px rgba(31, 42, 45, 0.08);
+}
+
+.quiet-option.active {
+  background: #fff7e5;
 }
 
 .quiet-option strong {

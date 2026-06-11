@@ -263,37 +263,33 @@
           <h2 id="quiet-time-title">Pause, pray, and reflect</h2>
           <p>
             Choose a peaceful instrumental worship option for your personal
-            prayer time. Each one opens on YouTube in a new tab.
+            prayer time and play it here while you spend time with God.
           </p>
         </div>
-        <div class="quiet-options" aria-label="Quiet time music options">
-          <a
-            class="quiet-option"
-            href="https://www.youtube.com/results?search_query=instrumental+worship+music+for+prayer"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <strong>Prayer instrumental</strong>
-            <span>Soft worship music for focused prayer.</span>
-          </a>
-          <a
-            class="quiet-option"
-            href="https://www.youtube.com/results?search_query=piano+worship+instrumental+quiet+time"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <strong>Piano worship</strong>
-            <span>Gentle piano for Bible reading and reflection.</span>
-          </a>
-          <a
-            class="quiet-option"
-            href="https://www.youtube.com/results?search_query=soaking+worship+instrumental+no+ads"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <strong>Soaking worship</strong>
-            <span>Longer background music for quiet time.</span>
-          </a>
+        <div class="quiet-player" aria-label="Quiet time music player">
+          <div class="video-frame">
+            <iframe
+              id="quiet-video"
+              src="https://www.youtube.com/embed/FZfVGbXrxiI"
+              title="Quiet time instrumental worship"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="quiet-options" aria-label="Quiet time music options">
+            <button class="quiet-option active" type="button" data-video="FZfVGbXrxiI">
+              <strong>Quiet worship</strong>
+              <span>Soft instrumental music for prayer.</span>
+            </button>
+            <button class="quiet-option" type="button" data-video="E-6GhfkMT3s">
+              <strong>Prayer reflection</strong>
+              <span>Peaceful background music for Bible reading.</span>
+            </button>
+            <button class="quiet-option" type="button" data-video="9WKoTAddjIY">
+              <strong>Deep quiet time</strong>
+              <span>Longer instrumental worship for stillness.</span>
+            </button>
+          </div>
         </div>
       </section>
     </main>
@@ -302,6 +298,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260611-quiet-time-links"></script>
+    <script type="module" src="script.js?v=20260611-quiet-time-embed"></script>
   </body>
 </html>
