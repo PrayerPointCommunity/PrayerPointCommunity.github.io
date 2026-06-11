@@ -267,6 +267,56 @@ h2 {
   font-weight: 800;
 }
 
+.quiet-time-band {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(255, 247, 229, 0.92), rgba(238, 245, 239, 0.96)),
+    var(--soft);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(220px, 0.85fr) minmax(280px, 1fr);
+  padding: clamp(28px, 5vw, 58px) clamp(18px, 5vw, 72px);
+}
+
+.quiet-time-copy p {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 560px;
+}
+
+.quiet-options {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quiet-option {
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  min-height: 140px;
+  padding: 18px;
+}
+
+.quiet-option:hover {
+  border-color: var(--gold);
+  box-shadow: 0 10px 26px rgba(31, 42, 45, 0.08);
+}
+
+.quiet-option strong {
+  color: var(--teal-dark);
+  font-family: var(--display-font);
+  font-size: 1.25rem;
+}
+
+.quiet-option span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .stats {
   background: var(--white);
   border-bottom: 1px solid var(--line);
@@ -759,6 +809,7 @@ footer {
 @media (max-width: 900px) {
   .hero,
   .daily-verse,
+  .quiet-time-band,
   .account-band,
   .workspace,
   .testimony-band,
@@ -771,6 +822,10 @@ footer {
   }
 
   .prayer-group-list {
+    grid-template-columns: 1fr;
+  }
+
+  .quiet-options {
     grid-template-columns: 1fr;
   }
 }
