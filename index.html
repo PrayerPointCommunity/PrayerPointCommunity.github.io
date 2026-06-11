@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260611-quiet-time-polish" />
   </head>
   <body>
     <header class="topbar">
@@ -262,11 +262,19 @@
           <p class="eyebrow">Quiet Time</p>
           <h2 id="quiet-time-title">Pause, pray, and reflect</h2>
           <p>
-            Choose a peaceful instrumental worship option for your personal
-            prayer time and play it here while you spend time with God.
+            A peaceful space for instrumental worship, Bible reading, and still
+            moments with God.
           </p>
+          <div class="quiet-time-note">
+            <span>Built for reflection</span>
+            <strong>Stay on PrayerPoint while the music plays.</strong>
+          </div>
         </div>
         <div class="quiet-player" aria-label="Quiet time music player">
+          <div class="quiet-player-heading">
+            <span>Now playing</span>
+            <strong id="quiet-current-title">Quiet worship</strong>
+          </div>
           <div class="video-frame">
             <iframe
               id="quiet-video"
@@ -277,15 +285,15 @@
             ></iframe>
           </div>
           <div class="quiet-options" aria-label="Quiet time music options">
-            <button class="quiet-option active" type="button" data-video="FZfVGbXrxiI">
+            <button class="quiet-option active" type="button" data-video="FZfVGbXrxiI" data-title="Quiet worship">
               <strong>Quiet worship</strong>
               <span>Soft instrumental music for prayer.</span>
             </button>
-            <button class="quiet-option" type="button" data-video="E-6GhfkMT3s">
+            <button class="quiet-option" type="button" data-video="E-6GhfkMT3s" data-title="Prayer reflection">
               <strong>Prayer reflection</strong>
               <span>Peaceful background music for Bible reading.</span>
             </button>
-            <button class="quiet-option" type="button" data-video="9WKoTAddjIY">
+            <button class="quiet-option" type="button" data-video="9WKoTAddjIY" data-title="Deep quiet time">
               <strong>Deep quiet time</strong>
               <span>Longer instrumental worship for stillness.</span>
             </button>
@@ -298,6 +306,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260611-quiet-time-embed"></script>
+    <script type="module" src="script.js?v=20260611-quiet-time-polish"></script>
   </body>
 </html>

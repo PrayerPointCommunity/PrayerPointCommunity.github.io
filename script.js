@@ -103,6 +103,7 @@ const testimonyList = document.querySelector("#testimony-list");
 const prayerGroupList = document.querySelector("#prayer-group-list");
 const quietVideo = document.querySelector("#quiet-video");
 const quietOptions = document.querySelector(".quiet-options");
+const quietCurrentTitle = document.querySelector("#quiet-current-title");
 
 const prayerGroups = [
   {
@@ -995,6 +996,7 @@ quietOptions.addEventListener("click", (event) => {
   if (!option) return;
 
   quietVideo.src = `https://www.youtube.com/embed/${option.dataset.video}`;
+  quietCurrentTitle.textContent = option.dataset.title;
   quietOptions.querySelectorAll(".quiet-option").forEach((button) => {
     button.classList.toggle("active", button === option);
   });
