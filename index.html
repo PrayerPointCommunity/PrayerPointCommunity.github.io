@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrayerPoint</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="PrayerPoint home">
+        <span class="brand-mark">PP</span>
+        <span class="brand-copy">
+          <span class="brand-name">PrayerPoint</span>
+          <span class="brand-motto">Where Hearts Unite in Prayers</span>
+        </span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#share">Share</a>
+        <a href="#requests">Pray</a>
+        <a href="#testimonies">Testimonies</a>
+        <a href="#connect">Connect</a>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">A calm space for faith and support</p>
+          <h1 id="page-title">Share prayer points. Stand with one another.</h1>
+          <p>
+            Post what is on your heart, pray for others, and find people who are
+            ready to agree with you in prayer.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#share">Share a prayer point</a>
+            <a class="button secondary" href="#requests">Pray for someone</a>
+          </div>
+        </div>
+        <aside class="prayer-focus" aria-label="Today's focus">
+          <span>Today's focus</span>
+          <strong>Peace, healing, provision, and renewed hope.</strong>
+        </aside>
+      </section>
+
+      <section class="daily-verse" aria-labelledby="daily-verse-title">
+        <div>
+          <p class="eyebrow">Daily Bible verse</p>
+          <h2 id="daily-verse-title">Scripture for today</h2>
+        </div>
+        <blockquote>
+          <p id="daily-verse-text">Loading today's verse...</p>
+          <cite id="daily-verse-reference"></cite>
+        </blockquote>
+      </section>
+
+      <section class="stats" aria-label="Community prayer activity">
+        <div>
+          <strong id="request-count">0</strong>
+          <span>Prayer points</span>
+        </div>
+        <div>
+          <strong id="prayer-count">0</strong>
+          <span>Prayers offered</span>
+        </div>
+        <div>
+          <strong>24/7</strong>
+          <span>Open for prayer</span>
+        </div>
+      </section>
+
+      <section class="account-band" aria-labelledby="account-title">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h2 id="account-title">Sign up to receive encouragement</h2>
+          <p>
+            Create an account so encouragement sent to your prayer requests can
+            come back to you privately.
+          </p>
+        </div>
+        <form id="auth-form" class="auth-panel">
+          <label>
+            Display name
+            <input id="auth-name" name="auth-name" placeholder="Your first name" />
+          </label>
+          <label>
+            Email
+            <input id="auth-email" name="auth-email" type="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" />
+          </label>
+          <div class="auth-actions">
+            <button class="button primary" type="button" id="sign-up-button">Sign up</button>
+            <button class="button outline" type="button" id="log-in-button">Log in</button>
+            <button class="button outline" type="button" id="forgot-password-button">Forgot password?</button>
+            <button class="button primary hidden" type="button" id="save-password-button">Save new password</button>
+            <button class="button outline hidden" type="button" id="sign-out-button">Sign out</button>
+          </div>
+          <p id="auth-status" class="form-note" role="status">You are browsing as a guest.</p>
+        </form>
+        <aside class="encouragement-inbox" aria-labelledby="inbox-title">
+          <h3 id="inbox-title">Your encouragement</h3>
+          <div id="encouragement-list">
+            <p class="muted-note">Sign in to see encouragement sent to your prayer requests.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="workspace">
+        <form id="share" class="panel prayer-form">
+          <div class="section-heading">
+            <p class="eyebrow">Share</p>
+            <h2>Post a prayer point</h2>
+          </div>
+
+          <label>
+            Your name
+            <input id="name" name="name" placeholder="First name or anonymous" />
+          </label>
+
+          <label class="check-row privacy-row">
+            <input id="post-anonymous" type="checkbox" />
+            <span>Post this prayer request anonymously</span>
+          </label>
+
+          <label>
+            Prayer category <span class="optional-text">optional</span>
+            <select id="category" name="category">
+              <option value="">Choose a category if it fits</option>
+              <option>Healing</option>
+              <option>Family</option>
+              <option>Faith</option>
+              <option>Provision</option>
+              <option>Guidance</option>
+              <option>Protection</option>
+              <option>Peace</option>
+              <option>Work</option>
+              <option>School</option>
+              <option>Marriage</option>
+              <option>Grief</option>
+              <option>Salvation</option>
+              <option>Thanksgiving</option>
+              <option>Other / Personal</option>
+            </select>
+          </label>
+
+          <label>
+            Prayer point
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              maxlength="280"
+              placeholder="Write a short request people can pray with you about."
+              required
+            ></textarea>
+          </label>
+
+          <label>
+            Keep this request on the wall
+            <select id="duration" name="duration">
+              <option value="1">1 day</option>
+              <option value="3">3 days</option>
+              <option value="7" selected>7 days</option>
+              <option value="14">14 days</option>
+            </select>
+          </label>
+
+          <label class="check-row">
+            <input id="open-to-connect" type="checkbox" checked />
+            <span>I am open to someone reaching out to pray with me</span>
+          </label>
+
+          <button class="button primary full" type="submit">Post prayer point</button>
+          <p id="form-note" class="form-note" role="status"></p>
+        </form>
+
+        <section id="requests" class="panel requests-panel" aria-labelledby="requests-title">
+          <div class="section-heading with-filter">
+            <div>
+              <p class="eyebrow">Pray</p>
+              <h2 id="requests-title">Prayer wall</h2>
+            </div>
+            <select id="filter" aria-label="Filter prayer points">
+              <option value="All">All</option>
+              <option>Healing</option>
+              <option>Family</option>
+              <option>Faith</option>
+              <option>Provision</option>
+              <option>Guidance</option>
+              <option>Protection</option>
+              <option>Peace</option>
+              <option>Work</option>
+              <option>School</option>
+              <option>Marriage</option>
+              <option>Grief</option>
+              <option>Salvation</option>
+              <option>Thanksgiving</option>
+              <option>Other / Personal</option>
+            </select>
+          </div>
+          <div id="prayer-list" class="prayer-list"></div>
+        </section>
+      </section>
+
+      <section id="testimonies" class="testimony-band" aria-labelledby="testimony-title">
+        <div class="testimony-intro">
+          <p class="eyebrow">Answered prayers</p>
+          <h2 id="testimony-title">Testimonial wall</h2>
+          <p>
+            Share how God answered a prayer and encourage someone who is still waiting.
+          </p>
+        </div>
+
+        <form id="testimony-form" class="panel testimony-form">
+          <label>
+            Your name
+            <input id="testimony-name" name="testimony-name" placeholder="First name or anonymous" />
+          </label>
+          <label>
+            Testimony
+            <textarea
+              id="testimony-message"
+              name="testimony-message"
+              rows="4"
+              maxlength="360"
+              placeholder="Share a short testimony of answered prayer."
+              required
+            ></textarea>
+          </label>
+          <button class="button primary full" type="submit">Share testimony</button>
+          <p id="testimony-note" class="form-note" role="status"></p>
+        </form>
+
+        <div id="testimony-list" class="testimony-list">
+          <div class="empty-state">No testimonies yet. Be the first to share an answered prayer.</div>
+        </div>
+      </section>
+
+      <section id="connect" class="connect-band" aria-labelledby="connect-title">
+        <div>
+          <p class="eyebrow">Connect</p>
+          <h2 id="connect-title">Create a prayer moment</h2>
+          <p>
+            Choose a request, send a note of encouragement, or start a small
+            prayer group around a shared need.
+          </p>
+        </div>
+        <div class="connection-options">
+          <button class="connection-card" type="button">
+            <span>01</span>
+            <strong>Pray now</strong>
+            <small>Take one request and pray quietly.</small>
+          </button>
+          <button class="connection-card" type="button">
+            <span>02</span>
+            <strong>Send encouragement</strong>
+            <small>Leave a kind word for the person.</small>
+          </button>
+          <button class="connection-card" type="button">
+            <span>03</span>
+            <strong>Gather a group</strong>
+            <small>Invite others to pray around one topic.</small>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>PrayerPoint is a community space for prayer and encouragement.</p>
+    </footer>
+
+    <script type="module" src="script.js?v=20260611-features"></script>
+  </body>
+</html>
