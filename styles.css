@@ -657,41 +657,88 @@ input:disabled {
   max-width: 560px;
 }
 
-.connection-options {
+.prayer-group-list {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.connection-card {
+.prayer-group-card {
+  align-items: start;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   color: var(--white);
-  cursor: pointer;
   display: grid;
-  gap: 12px;
-  min-height: 190px;
+  gap: 14px;
+  grid-template-columns: 44px minmax(0, 1fr);
   padding: 18px;
   text-align: left;
 }
 
-.connection-card:hover {
+.prayer-group-card:hover {
   background: rgba(255, 255, 255, 0.14);
 }
 
-.connection-card span {
+.group-number {
+  align-items: center;
+  background: var(--gold);
+  border-radius: 50%;
+  color: #241b0a;
+  display: inline-flex;
+  font-weight: 900;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.prayer-group-card h3 {
+  font-family: var(--display-font);
+  font-size: 1.25rem;
+  margin: 0 0 6px;
+}
+
+.prayer-group-card p {
+  margin: 0 0 8px;
+}
+
+.prayer-group-card small {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+}
+
+.group-stats,
+.group-actions {
+  grid-column: 1 / -1;
+}
+
+.group-stats {
+  display: grid;
+  gap: 3px 8px;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+}
+
+.group-stats strong {
   color: var(--gold);
   font-weight: 900;
 }
 
-.connection-card strong {
-  font-size: 1.15rem;
+.group-stats span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
 }
 
-.connection-card small {
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.5;
+.group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.group-actions .ghost-button {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--white);
 }
 
 footer {
@@ -713,7 +760,7 @@ footer {
     min-height: 680px;
   }
 
-  .connection-options {
+  .prayer-group-list {
     grid-template-columns: 1fr;
   }
 }

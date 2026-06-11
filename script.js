@@ -71,6 +71,8 @@ const blockedWords = [
 
 const storageKey = "prayer-circle-requests";
 const prayedStorageKey = "prayer-circle-prayed-requests";
+const groupVisitorStorageKey = "prayer-circle-group-visitor";
+const localGroupStorageKey = "prayer-circle-groups";
 const list = document.querySelector("#prayer-list");
 const form = document.querySelector("#share");
 const filter = document.querySelector("#filter");
@@ -98,14 +100,63 @@ const testimonyName = document.querySelector("#testimony-name");
 const testimonyMessage = document.querySelector("#testimony-message");
 const testimonyNote = document.querySelector("#testimony-note");
 const testimonyList = document.querySelector("#testimony-list");
+const prayerGroupList = document.querySelector("#prayer-group-list");
+
+const prayerGroups = [
+  {
+    key: "peace-world",
+    title: "Peace in the world",
+    description: "Pray for peace, mercy, and protection where communities are hurting.",
+    focus: "Peace, protection, and comfort for those affected by conflict.",
+  },
+  {
+    key: "war-conflict",
+    title: "War and conflict",
+    description: "Pray for people in war zones, displaced families, and wise peacemaking.",
+    focus: "An end to violence and strength for those suffering.",
+  },
+  {
+    key: "families",
+    title: "Families",
+    description: "Pray for homes, marriages, parents, children, and reconciliation.",
+    focus: "Healing, patience, unity, and love in families.",
+  },
+  {
+    key: "healing",
+    title: "Healing",
+    description: "Pray for people facing sickness, anxiety, grief, or recovery.",
+    focus: "Strength, healing, and hope for body, mind, and spirit.",
+  },
+  {
+    key: "youth-students",
+    title: "Youth and students",
+    description: "Pray for young people, schools, exams, friendships, and purpose.",
+    focus: "Wisdom, protection, confidence, and good direction.",
+  },
+  {
+    key: "leaders-nations",
+    title: "Leaders and nations",
+    description: "Pray for leaders to choose justice, mercy, and wisdom.",
+    focus: "Righteous leadership and care for vulnerable people.",
+  },
+];
 
 let requests = [];
 let testimonies = [];
+let groupStats = {};
 let currentUser = null;
 let usingDatabase = true;
 let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let signUpCooldownTimer = null;
+
+const getGroupVisitorKey = () => {
+  const existingKey = localStorage.getItem(groupVisitorStorageKey);
+  if (existingKey) return existingKey;
+  const newKey = crypto.randomUUID();
+  localStorage.setItem(groupVisitorStorageKey, newKey);
+  return newKey;
+};
 
 const loadLocalRequests = () => {
   const saved = localStorage.getItem(storageKey);
@@ -118,6 +169,12 @@ const saveLocalRequests = () => {
 
 const savePrayedRequestIds = () => {
   localStorage.setItem(prayedStorageKey, JSON.stringify([...prayedRequestIds]));
+};
+
+const loadLocalGroupStats = () => JSON.parse(localStorage.getItem(localGroupStorageKey) || "{}");
+
+const saveLocalGroupStats = () => {
+  localStorage.setItem(localGroupStorageKey, JSON.stringify(groupStats));
 };
 
 const escapeHtml = (value) =>
@@ -396,6 +453,40 @@ const renderTestimonies = () => {
     .join("");
 };
 
+const renderPrayerGroups = () => {
+  prayerGroupList.innerHTML = prayerGroups
+    .map((group) => {
+      const stats = groupStats[group.key] || {};
+      const joined = Boolean(stats.joined);
+      const prayedToday = stats.prayedToday === new Date().toISOString().slice(0, 10);
+      return `
+        <article class="prayer-group-card">
+          <span class="group-number">${escapeHtml(group.title.slice(0, 2).toUpperCase())}</span>
+          <div>
+            <h3>${escapeHtml(group.title)}</h3>
+            <p>${escapeHtml(group.description)}</p>
+            <small>${escapeHtml(group.focus)}</small>
+          </div>
+          <div class="group-stats">
+            <strong>${stats.members || 0}</strong>
+            <span>joined</span>
+            <strong>${stats.prayers || 0}</strong>
+            <span>prayers</span>
+          </div>
+          <div class="group-actions">
+            <button class="mini-button" type="button" data-join-group="${group.key}" ${
+              joined ? "disabled" : ""
+            }>${joined ? "Joined" : "Join group"}</button>
+            <button class="ghost-button" type="button" data-pray-group="${group.key}" ${
+              prayedToday ? "disabled" : ""
+            }>${prayedToday ? "Prayed today" : "I prayed today"}</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+};
+
 const loadRequests = async () => {
   if (!usingDatabase) {
     requests = loadLocalRequests();
@@ -441,6 +532,40 @@ const loadTestimonies = async () => {
   }
 
   renderTestimonies();
+};
+
+const loadPrayerGroups = async () => {
+  const visitorKey = getGroupVisitorKey();
+
+  if (!usingDatabase) {
+    groupStats = loadLocalGroupStats();
+    renderPrayerGroups();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("prayer_group_activity")
+    .select("group_key, visitor_key, joined, prayed_count, prayed_today_on");
+
+  if (error) {
+    groupStats = loadLocalGroupStats();
+    renderPrayerGroups();
+    return;
+  }
+
+  groupStats = {};
+  prayerGroups.forEach((group) => {
+    const rows = data.filter((item) => item.group_key === group.key);
+    const ownRow = rows.find((item) => item.visitor_key === visitorKey);
+    groupStats[group.key] = {
+      members: rows.filter((item) => item.joined).length,
+      prayers: rows.reduce((sum, item) => sum + (item.prayed_count || 0), 0),
+      joined: Boolean(ownRow?.joined),
+      prayedToday: ownRow?.prayed_today_on || "",
+    };
+  });
+
+  renderPrayerGroups();
 };
 
 const requireSignIn = () => {
@@ -544,6 +669,59 @@ const nativeShareRequest = async (id) => {
   } catch (_error) {
     showFormNote("Sharing was cancelled.");
   }
+};
+
+const joinPrayerGroup = async (groupKey) => {
+  const visitorKey = getGroupVisitorKey();
+
+  if (usingDatabase) {
+    const { error } = await supabase.rpc("join_prayer_group", {
+      group_name: groupKey,
+      visitor: visitorKey,
+    });
+
+    if (!error) {
+      await loadPrayerGroups();
+      return;
+    }
+  }
+
+  groupStats = loadLocalGroupStats();
+  groupStats[groupKey] = {
+    ...(groupStats[groupKey] || {}),
+    members: (groupStats[groupKey]?.members || 0) + 1,
+    joined: true,
+  };
+  saveLocalGroupStats();
+  renderPrayerGroups();
+};
+
+const prayInPrayerGroup = async (groupKey) => {
+  const visitorKey = getGroupVisitorKey();
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (groupStats[groupKey]?.prayedToday === today) return;
+
+  if (usingDatabase) {
+    const { error } = await supabase.rpc("pray_in_group", {
+      group_name: groupKey,
+      visitor: visitorKey,
+    });
+
+    if (!error) {
+      await loadPrayerGroups();
+      return;
+    }
+  }
+
+  groupStats = loadLocalGroupStats();
+  groupStats[groupKey] = {
+    ...(groupStats[groupKey] || {}),
+    prayers: (groupStats[groupKey]?.prayers || 0) + 1,
+    prayedToday: today,
+  };
+  saveLocalGroupStats();
+  renderPrayerGroups();
 };
 
 const prayForRequest = async (id) => {
@@ -802,10 +980,12 @@ list.addEventListener("click", async (event) => {
   if (nativeShareButton) await nativeShareRequest(nativeShareButton.dataset.nativeShare);
 });
 
-document.querySelectorAll(".connection-card").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelector("#requests").scrollIntoView({ behavior: "smooth" });
-  });
+prayerGroupList.addEventListener("click", async (event) => {
+  const joinButton = event.target.closest("[data-join-group]");
+  const prayButton = event.target.closest("[data-pray-group]");
+
+  if (joinButton) await joinPrayerGroup(joinButton.dataset.joinGroup);
+  if (prayButton) await prayInPrayerGroup(prayButton.dataset.prayGroup);
 });
 
 const initialize = async () => {
@@ -816,6 +996,7 @@ const initialize = async () => {
   renderAuth();
   await loadRequests();
   await loadTestimonies();
+  await loadPrayerGroups();
   await renderEncouragements();
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
