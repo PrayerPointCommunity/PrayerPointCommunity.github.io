@@ -299,9 +299,9 @@ h2 {
   background: #ffffff;
   border-bottom: 1px solid var(--line);
   display: grid;
-  gap: 24px;
-  grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1fr) minmax(260px, 0.9fr);
-  padding: clamp(28px, 5vw, 58px) clamp(18px, 5vw, 72px);
+  gap: 18px;
+  grid-template-columns: minmax(220px, 0.85fr) minmax(280px, 1.1fr) minmax(240px, 0.85fr);
+  padding: clamp(22px, 4vw, 42px) clamp(18px, 5vw, 72px);
 }
 
 .account-band p {
@@ -316,8 +316,8 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: 12px;
+  padding: 14px;
 }
 
 .auth-actions {
@@ -376,6 +376,16 @@ h2 {
   display: grid;
   gap: 18px;
   padding: 24px;
+}
+
+.safety-note {
+  background: #fff7e5;
+  border: 1px solid rgba(215, 168, 76, 0.45);
+  border-radius: 6px;
+  color: #64512c;
+  line-height: 1.45;
+  margin: 0;
+  padding: 12px;
 }
 
 .section-heading {
