@@ -848,7 +848,7 @@ const signUp = async () => {
     password,
     options: {
       data: { display_name: displayName },
-      emailRedirectTo: "https://keyoletoltu4-glitch.github.io/PrayerPoint-Website/",
+      emailRedirectTo: "https://prayerpointcommunity.github.io/",
     },
   });
 
@@ -891,7 +891,7 @@ const sendPasswordReset = async () => {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://keyoletoltu4-glitch.github.io/PrayerPoint-Website/",
+    redirectTo: "https://prayerpointcommunity.github.io/",
   });
 
   if (error) {
