@@ -85,7 +85,6 @@ const nameInput = document.querySelector("#name");
 const anonymousInput = document.querySelector("#post-anonymous");
 const openToConnectInput = document.querySelector("#open-to-connect");
 const durationInput = document.querySelector("#duration");
-const authName = document.querySelector("#auth-name");
 const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
 const signUpButton = document.querySelector("#sign-up-button");
@@ -308,7 +307,6 @@ const renderAuth = () => {
   forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
   savePasswordButton.classList.toggle("hidden", !resettingPassword);
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
-  authName.disabled = signedIn;
   authEmail.disabled = signedIn;
   authPassword.disabled = signedIn && !resettingPassword;
 
@@ -833,10 +831,14 @@ const submitTestimony = async (event) => {
 const signUp = async () => {
   const email = authEmail.value.trim();
   const password = authPassword.value;
-  const displayName = authName.value.trim() || "PrayerPoint member";
 
-  if (hasBlockedWords(displayName)) {
-    showAuthStatus("Please remove vulgar or offensive words from the display name.", true);
+  if (!email) {
+    showAuthStatus("Enter your email before signing up.", true);
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthStatus("Password must be at least 6 characters.", true);
     return;
   }
 
@@ -847,7 +849,6 @@ const signUp = async () => {
     email,
     password,
     options: {
-      data: { display_name: displayName },
       emailRedirectTo: "https://prayerpointcommunity.github.io/",
     },
   });

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260611-quiet-time-single" />
+    <link rel="stylesheet" href="styles.css?v=20260612-auth-buttons" />
   </head>
   <body>
     <header class="topbar">
@@ -81,16 +81,12 @@
         </div>
         <form id="auth-form" class="auth-panel">
           <label>
-            Display name
-            <input id="auth-name" name="auth-name" placeholder="Your first name" />
-          </label>
-          <label>
             Email
-            <input id="auth-email" name="auth-email" type="email" placeholder="you@example.com" />
+            <input id="auth-email" name="auth-email" type="email" placeholder="you@example.com" required />
           </label>
           <label>
             Password
-            <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" />
+            <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" required />
           </label>
           <div class="auth-actions">
             <button class="button primary" type="button" id="sign-up-button">Sign up</button>
@@ -292,6 +288,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260611-quiet-time-single"></script>
+    <script type="module" src="script.js?v=20260612-auth-buttons"></script>
   </body>
 </html>
