@@ -382,6 +382,9 @@ const renderRequests = () => {
       const category = request.category || "Uncategorized";
       const canEncourage = request.userId && request.openToConnect;
       const alreadyPrayed = prayedRequestIds.has(request.id);
+      const canDelete = usingDatabase
+        ? currentUser?.id && request.userId === currentUser.id
+        : true;
       card.id = `prayer-${request.id}`;
       if (shareTargetId === request.id) card.classList.add("highlighted");
       card.innerHTML = `
@@ -394,13 +397,18 @@ const renderRequests = () => {
         </div>
         <p>${escapeHtml(request.message)}</p>
         <div class="prayer-actions">
-          <button class="mini-button" type="button" data-pray="${request.id}" ${
-            alreadyPrayed ? "disabled" : ""
-          }>${alreadyPrayed ? "Prayer counted" : "I prayed"}</button>
+          <button class="mini-button" type="button" ${
+            alreadyPrayed ? `data-unpray="${request.id}"` : `data-pray="${request.id}"`
+          }>${alreadyPrayed ? "Undo prayer" : "I prayed"}</button>
           <button class="ghost-button" type="button" data-encourage="${request.id}" ${
             canEncourage ? "" : "disabled"
           }>Encourage</button>
           <button class="ghost-button" type="button" data-share="${request.id}">Share</button>
+          ${
+            canDelete
+              ? `<button class="ghost-button danger-button" type="button" data-delete-request="${request.id}">Remove</button>`
+              : ""
+          }
           <span class="prayed-count">${request.prayers} prayers</span>
         </div>
         <div class="share-panel hidden" id="share-panel-${request.id}" aria-label="Share this prayer request">
@@ -724,7 +732,7 @@ const prayInPrayerGroup = async (groupKey) => {
 
 const prayForRequest = async (id) => {
   if (prayedRequestIds.has(id)) {
-    showFormNote("You have already counted a prayer for this request.");
+    await undoPrayerForRequest(id);
     return;
   }
 
@@ -748,6 +756,72 @@ const prayForRequest = async (id) => {
   savePrayedRequestIds();
   saveLocalRequests();
   renderRequests();
+};
+
+const undoPrayerForRequest = async (id) => {
+  if (!prayedRequestIds.has(id)) return;
+
+  const request = requests.find((item) => item.id === id);
+  if (!request) return;
+
+  if (usingDatabase) {
+    const { error } = await supabase.rpc("decrement_prayer_count", { request_id: id });
+    if (error) {
+      showFormNote("Undo prayer needs the latest Supabase update before it can work live.", true);
+      return;
+    }
+    prayedRequestIds.delete(id);
+    savePrayedRequestIds();
+    await loadRequests();
+    showFormNote("Prayer count updated.");
+    return;
+  }
+
+  request.prayers = Math.max(0, request.prayers - 1);
+  prayedRequestIds.delete(id);
+  savePrayedRequestIds();
+  saveLocalRequests();
+  renderRequests();
+  showFormNote("Prayer count updated.");
+};
+
+const deletePrayerRequest = async (id) => {
+  const request = requests.find((item) => item.id === id);
+  if (!request) return;
+
+  const shouldDelete = window.confirm("Remove this prayer request from the wall?");
+  if (!shouldDelete) return;
+
+  if (usingDatabase) {
+    if (!currentUser || request.userId !== currentUser.id) {
+      showFormNote("You can only remove prayer requests you posted.", true);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("prayer_requests")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", currentUser.id);
+
+    if (error) {
+      showFormNote("Could not remove this prayer request yet.", true);
+      return;
+    }
+
+    prayedRequestIds.delete(id);
+    savePrayedRequestIds();
+    await loadRequests();
+    showFormNote("Prayer request removed.");
+    return;
+  }
+
+  requests = requests.filter((item) => item.id !== id);
+  prayedRequestIds.delete(id);
+  savePrayedRequestIds();
+  saveLocalRequests();
+  renderRequests();
+  showFormNote("Prayer request removed.");
 };
 
 const encourageRequest = async (id) => {
@@ -969,14 +1043,18 @@ signOutButton.addEventListener("click", signOut);
 
 list.addEventListener("click", async (event) => {
   const prayButton = event.target.closest("[data-pray]");
+  const unprayButton = event.target.closest("[data-unpray]");
   const encourageButton = event.target.closest("[data-encourage]");
   const shareButton = event.target.closest("[data-share]");
+  const deleteButton = event.target.closest("[data-delete-request]");
   const copyButton = event.target.closest("[data-copy-link]");
   const nativeShareButton = event.target.closest("[data-native-share]");
 
   if (prayButton) await prayForRequest(prayButton.dataset.pray);
+  if (unprayButton) await undoPrayerForRequest(unprayButton.dataset.unpray);
   if (encourageButton) await encourageRequest(encourageButton.dataset.encourage);
   if (shareButton) await shareRequest(shareButton.dataset.share);
+  if (deleteButton) await deletePrayerRequest(deleteButton.dataset.deleteRequest);
   if (copyButton) await copyShareLink(copyButton.dataset.copyLink);
   if (nativeShareButton) await nativeShareRequest(nativeShareButton.dataset.nativeShare);
 });

@@ -650,6 +650,15 @@ input:disabled {
   padding: 0 13px;
 }
 
+.danger-button {
+  border-color: rgba(163, 61, 53, 0.34);
+  color: #8f2f28;
+}
+
+.danger-button:hover {
+  background: #fff1ef;
+}
+
 .ghost-link {
   align-items: center;
   background: var(--white);
