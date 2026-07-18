@@ -345,7 +345,7 @@ const renderEncouragements = async () => {
 
   const { data, error } = await supabase
     .from("encouragements")
-    .select("message, sender_name, created_at")
+    .select("message, sender_name, recipient_id, created_at")
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -363,12 +363,15 @@ const renderEncouragements = async () => {
 
   encouragementList.innerHTML = data
     .map(
-      (item) => `
+      (item) => {
+        const direction = item.recipient_id === currentUser.id ? "Received" : "Sent";
+        return `
         <article class="encouragement-note">
           <p>${escapeHtml(item.message)}</p>
-          <small>${escapeHtml(item.sender_name || "A PrayerPoint member")} · ${timeAgo(item.created_at)}</small>
+          <small>${direction} · ${escapeHtml(item.sender_name || "A PrayerPoint member")} · ${timeAgo(item.created_at)}</small>
         </article>
-      `,
+      `;
+      },
     )
     .join("");
 };
@@ -873,6 +876,7 @@ const encourageRequest = async (id) => {
   }
 
   showFormNote("Your encouragement was sent privately.");
+  await renderEncouragements();
 };
 
 const submitTestimony = async (event) => {
