@@ -85,6 +85,15 @@ const nameInput = document.querySelector("#name");
 const anonymousInput = document.querySelector("#post-anonymous");
 const openToConnectInput = document.querySelector("#open-to-connect");
 const durationInput = document.querySelector("#duration");
+const accountToggle = document.querySelector("#account-toggle");
+const accountToggleText = document.querySelector("#account-toggle-text");
+const accountDot = document.querySelector("#account-dot");
+const accountPanel = document.querySelector("#account-panel");
+const accountClose = document.querySelector("#account-close");
+const profileStatus = document.querySelector("#profile-status");
+const profileLoginState = document.querySelector("#profile-login-state");
+const profileEmail = document.querySelector("#profile-email");
+const authForm = document.querySelector("#auth-form");
 const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
 const signUpButton = document.querySelector("#sign-up-button");
@@ -302,6 +311,7 @@ const renderDailyVerse = () => {
 
 const renderAuth = () => {
   const signedIn = Boolean(currentUser);
+  const userEmail = currentUser?.email || "";
   signUpButton.classList.toggle("hidden", signedIn || resettingPassword);
   logInButton.classList.toggle("hidden", signedIn || resettingPassword);
   forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
@@ -309,14 +319,20 @@ const renderAuth = () => {
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
   authEmail.disabled = signedIn;
   authPassword.disabled = signedIn && !resettingPassword;
+  accountToggleText.textContent = signedIn ? "Account" : "Guest";
+  accountDot.classList.toggle("signed-in", signedIn);
+  profileLoginState.textContent = signedIn ? "Signed in" : "Guest";
+  profileEmail.textContent = signedIn ? userEmail : "Not signed in";
 
   if (resettingPassword) {
     showAuthStatus("Enter a new password, then press Save new password.");
+    profileStatus.textContent = "Password reset is open. Save a new password to continue.";
   } else if (signedIn) {
-    const name = currentUser.user_metadata?.display_name || currentUser.email;
-    showAuthStatus(`Signed in as ${name}.`);
+    showAuthStatus(`Signed in as ${userEmail}.`);
+    profileStatus.textContent = "You are signed in. Encouragement sent to your prayer requests will appear here.";
   } else {
     showAuthStatus("You are browsing as a guest.");
+    profileStatus.textContent = "Create an account or log in to post prayers, share testimonies, and receive encouragement.";
   }
 };
 
@@ -942,9 +958,22 @@ const signUp = async () => {
 };
 
 const logIn = async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+
+  if (!email) {
+    showAuthStatus("Enter your email before logging in.", true);
+    return;
+  }
+
+  if (!password) {
+    showAuthStatus("Enter your password before logging in.", true);
+    return;
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: authEmail.value.trim(),
-    password: authPassword.value,
+    email,
+    password,
   });
 
   if (error) {
@@ -1005,6 +1034,38 @@ const signOut = async () => {
   await renderEncouragements();
 };
 
+const handleAuthAction = async (event) => {
+  const actionButton = event.target.closest("[data-auth-action]");
+  if (!actionButton) return;
+
+  event.preventDefault();
+  const action = actionButton.dataset.authAction;
+
+  if (action === "sign-up") await signUp();
+  if (action === "log-in") await logIn();
+  if (action === "forgot-password") await sendPasswordReset();
+  if (action === "save-password") await saveNewPassword();
+  if (action === "sign-out") await signOut();
+};
+
+const openAccountPanel = () => {
+  accountPanel.classList.remove("hidden");
+  accountToggle.setAttribute("aria-expanded", "true");
+};
+
+const closeAccountPanel = () => {
+  accountPanel.classList.add("hidden");
+  accountToggle.setAttribute("aria-expanded", "false");
+};
+
+const toggleAccountPanel = () => {
+  if (accountPanel.classList.contains("hidden")) {
+    openAccountPanel();
+  } else {
+    closeAccountPanel();
+  }
+};
+
 const handleAuthRedirect = async () => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -1035,11 +1096,26 @@ anonymousInput.addEventListener("change", () => {
 form.addEventListener("submit", submitPrayerRequest);
 testimonyForm.addEventListener("submit", submitTestimony);
 filter.addEventListener("change", renderRequests);
-signUpButton.addEventListener("click", signUp);
-logInButton.addEventListener("click", logIn);
-forgotPasswordButton.addEventListener("click", sendPasswordReset);
-savePasswordButton.addEventListener("click", saveNewPassword);
-signOutButton.addEventListener("click", signOut);
+authForm.addEventListener("click", handleAuthAction);
+authForm.addEventListener("submit", (event) => event.preventDefault());
+accountToggle.addEventListener("click", toggleAccountPanel);
+accountClose.addEventListener("click", closeAccountPanel);
+
+document.addEventListener("click", (event) => {
+  if (
+    accountPanel.classList.contains("hidden") ||
+    accountPanel.contains(event.target) ||
+    accountToggle.contains(event.target)
+  ) {
+    return;
+  }
+
+  closeAccountPanel();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeAccountPanel();
+});
 
 list.addEventListener("click", async (event) => {
   const prayButton = event.target.closest("[data-pray]");

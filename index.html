@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260612-prayer-controls" />
+    <link rel="stylesheet" href="styles.css?v=20260718-account-panel" />
   </head>
   <body>
     <header class="topbar">
@@ -21,7 +21,64 @@
         <a href="#connect">Groups</a>
         <a href="#quiet-time">Quiet Time</a>
       </nav>
+      <button class="account-toggle" type="button" id="account-toggle" aria-expanded="false" aria-controls="account-panel">
+        <span id="account-dot" class="account-dot"></span>
+        <span id="account-toggle-text">Guest</span>
+      </button>
     </header>
+
+    <section id="account-panel" class="account-panel hidden" aria-labelledby="account-title">
+      <div class="account-panel-header">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h2 id="account-title">Your PrayerPoint account</h2>
+        </div>
+        <button class="ghost-button" type="button" id="account-close">Close</button>
+      </div>
+
+      <div class="account-grid">
+        <div class="profile-card">
+          <h3>Profile details</h3>
+          <p id="profile-status">You are browsing as a guest.</p>
+          <dl>
+            <div>
+              <dt>Status</dt>
+              <dd id="profile-login-state">Guest</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd id="profile-email">Not signed in</dd>
+            </div>
+          </dl>
+        </div>
+
+        <form id="auth-form" class="auth-panel">
+          <label>
+            Email
+            <input id="auth-email" name="auth-email" type="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" required />
+          </label>
+          <div class="auth-actions">
+            <button class="button primary" type="button" id="sign-up-button" data-auth-action="sign-up">Sign up</button>
+            <button class="button outline" type="button" id="log-in-button" data-auth-action="log-in">Log in</button>
+            <button class="button outline" type="button" id="forgot-password-button" data-auth-action="forgot-password">Forgot password?</button>
+            <button class="button primary hidden" type="button" id="save-password-button" data-auth-action="save-password">Save new password</button>
+            <button class="button outline hidden" type="button" id="sign-out-button" data-auth-action="sign-out">Sign out</button>
+          </div>
+          <p id="auth-status" class="form-note" role="status">You are browsing as a guest.</p>
+        </form>
+
+        <aside class="encouragement-inbox" aria-labelledby="inbox-title">
+          <h3 id="inbox-title">Your encouragement</h3>
+          <div id="encouragement-list">
+            <p class="muted-note">Sign in to see encouragement sent to your prayer requests.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
 
     <main id="home">
       <section class="hero" aria-labelledby="page-title">
@@ -68,41 +125,6 @@
           <strong>24/7</strong>
           <span>Open for prayer</span>
         </div>
-      </section>
-
-      <section class="account-band" aria-labelledby="account-title">
-        <div>
-          <p class="eyebrow">Account</p>
-          <h2 id="account-title">Create a PrayerPoint account</h2>
-          <p>
-            Sign in when you want to post shared prayers, send encouragement,
-            receive replies, or share a testimony.
-          </p>
-        </div>
-        <form id="auth-form" class="auth-panel">
-          <label>
-            Email
-            <input id="auth-email" name="auth-email" type="email" placeholder="you@example.com" required />
-          </label>
-          <label>
-            Password
-            <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" required />
-          </label>
-          <div class="auth-actions">
-            <button class="button primary" type="button" id="sign-up-button">Sign up</button>
-            <button class="button outline" type="button" id="log-in-button">Log in</button>
-            <button class="button outline" type="button" id="forgot-password-button">Forgot password?</button>
-            <button class="button primary hidden" type="button" id="save-password-button">Save new password</button>
-            <button class="button outline hidden" type="button" id="sign-out-button">Sign out</button>
-          </div>
-          <p id="auth-status" class="form-note" role="status">You are browsing as a guest.</p>
-        </form>
-        <aside class="encouragement-inbox" aria-labelledby="inbox-title">
-          <h3 id="inbox-title">Your encouragement</h3>
-          <div id="encouragement-list">
-            <p class="muted-note">Sign in to see encouragement sent to your prayer requests.</p>
-          </div>
-        </aside>
       </section>
 
       <section class="workspace">
@@ -288,6 +310,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260612-prayer-controls"></script>
+    <script type="module" src="script.js?v=20260718-account-panel"></script>
   </body>
 </html>

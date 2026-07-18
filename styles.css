@@ -114,6 +114,120 @@ nav a:hover {
   color: var(--teal-dark);
 }
 
+.account-toggle {
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--teal-dark);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 850;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.account-toggle:hover,
+.account-toggle[aria-expanded="true"] {
+  border-color: var(--gold);
+  box-shadow: 0 8px 22px rgba(31, 42, 45, 0.08);
+}
+
+.account-dot {
+  background: var(--muted);
+  border-radius: 50%;
+  display: inline-block;
+  height: 9px;
+  width: 9px;
+}
+
+.account-dot.signed-in {
+  background: var(--teal);
+}
+
+.account-panel {
+  background: rgba(251, 251, 247, 0.98);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(31, 42, 45, 0.18);
+  display: grid;
+  gap: 18px;
+  max-height: min(720px, calc(100vh - 96px));
+  overflow: auto;
+  padding: 18px;
+  position: fixed;
+  right: clamp(14px, 4vw, 56px);
+  top: 82px;
+  width: min(920px, calc(100vw - 28px));
+  z-index: 10;
+}
+
+.account-panel-header {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding-bottom: 14px;
+}
+
+.account-grid {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(260px, 1fr) minmax(240px, 0.9fr);
+}
+
+.profile-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.profile-card h3 {
+  color: var(--teal-dark);
+  font-family: var(--display-font);
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.profile-card p {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.profile-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.profile-card dl div {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+}
+
+.profile-card dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.profile-card dd {
+  color: var(--ink);
+  font-weight: 750;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 main {
   overflow: hidden;
 }
@@ -382,22 +496,6 @@ h2 {
 
 .stats span {
   color: var(--muted);
-}
-
-.account-band {
-  align-items: start;
-  background: #ffffff;
-  border-bottom: 1px solid var(--line);
-  display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(220px, 0.85fr) minmax(280px, 1.1fr) minmax(240px, 0.85fr);
-  padding: clamp(22px, 4vw, 42px) clamp(18px, 5vw, 72px);
-}
-
-.account-band p {
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 0;
 }
 
 .auth-panel,
@@ -859,10 +957,13 @@ footer {
   .hero,
   .daily-verse,
   .quiet-time-band,
-  .account-band,
   .workspace,
   .testimony-band,
   .connect-band {
+    grid-template-columns: 1fr;
+  }
+
+  .account-grid {
     grid-template-columns: 1fr;
   }
 
@@ -885,6 +986,16 @@ footer {
   nav {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .account-toggle {
+    align-self: stretch;
+  }
+
+  .account-panel {
+    max-height: calc(100vh - 142px);
+    right: 14px;
+    top: 130px;
   }
 
   .hero {
