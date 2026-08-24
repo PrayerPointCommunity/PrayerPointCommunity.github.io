@@ -372,7 +372,7 @@ const renderEncouragements = async () => {
 
   const { data, error } = await supabase
     .from("encouragements")
-    .select("message, sender_name, recipient_id, created_at")
+    .select("id, message, sender_name, recipient_id, created_at")
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -407,8 +407,11 @@ const renderEncouragements = async () => {
         const direction = item.recipient_id === currentUser.id ? "Received" : "Sent";
         return `
         <article class="encouragement-note">
+          <div class="encouragement-note-header">
+            <small>${direction} · ${escapeHtml(item.sender_name || "A PrayerPoint member")} · ${timeAgo(item.created_at)}</small>
+            <button class="ghost-button danger-button" type="button" data-remove-encouragement="${item.id}">Remove</button>
+          </div>
           <p>${escapeHtml(item.message)}</p>
-          <small>${direction} · ${escapeHtml(item.sender_name || "A PrayerPoint member")} · ${timeAgo(item.created_at)}</small>
         </article>
       `;
       },
@@ -1220,11 +1223,13 @@ const handleAuthAction = async (event) => {
 const openAccountPanel = () => {
   accountPanel.classList.remove("hidden");
   accountToggle.setAttribute("aria-expanded", "true");
+  document.body.classList.add("profile-open");
 };
 
 const closeAccountPanel = () => {
   accountPanel.classList.add("hidden");
   accountToggle.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("profile-open");
 };
 
 const toggleAccountPanel = () => {
@@ -1233,6 +1238,22 @@ const toggleAccountPanel = () => {
   } else {
     closeAccountPanel();
   }
+};
+
+const removeEncouragement = async (id) => {
+  if (!currentUser || !usingDatabase) return;
+
+  const { error } = await supabase.from("encouragements").delete().eq("id", id);
+
+  if (error) {
+    encouragementList.insertAdjacentHTML(
+      "afterbegin",
+      '<p class="form-note error">Encouragement could not be removed yet. Please run the Supabase update.</p>',
+    );
+    return;
+  }
+
+  await renderEncouragements();
 };
 
 const handleAuthRedirect = async () => {
@@ -1277,6 +1298,13 @@ accountToggle.addEventListener("click", toggleAccountPanel);
 accountClose.addEventListener("click", closeAccountPanel);
 encouragementForm.addEventListener("submit", sendEncouragement);
 encouragementCancel.addEventListener("click", closeEncouragementDialog);
+
+encouragementList.addEventListener("click", async (event) => {
+  const removeButton = event.target.closest("[data-remove-encouragement]");
+  if (!removeButton) return;
+
+  await removeEncouragement(removeButton.dataset.removeEncouragement);
+});
 
 encouragementDialog.addEventListener("click", (event) => {
   if (event.target === encouragementDialog) closeEncouragementDialog();
