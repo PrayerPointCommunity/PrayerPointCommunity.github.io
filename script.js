@@ -71,6 +71,7 @@ const blockedWords = [
 
 const storageKey = "prayer-circle-requests";
 const prayedStorageKey = "prayer-circle-prayed-requests";
+const testimonyReactionStorageKey = "prayer-circle-testimony-reactions";
 const groupVisitorStorageKey = "prayer-circle-group-visitor";
 const localGroupStorageKey = "prayer-circle-groups";
 const list = document.querySelector("#prayer-list");
@@ -98,6 +99,7 @@ const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
 const signUpButton = document.querySelector("#sign-up-button");
 const logInButton = document.querySelector("#log-in-button");
+const resendConfirmationButton = document.querySelector("#resend-confirmation-button");
 const forgotPasswordButton = document.querySelector("#forgot-password-button");
 const savePasswordButton = document.querySelector("#save-password-button");
 const signOutButton = document.querySelector("#sign-out-button");
@@ -156,6 +158,7 @@ let currentUser = null;
 let usingDatabase = true;
 let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
+let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let signUpCooldownTimer = null;
 
 const getGroupVisitorKey = () => {
@@ -177,6 +180,10 @@ const saveLocalRequests = () => {
 
 const savePrayedRequestIds = () => {
   localStorage.setItem(prayedStorageKey, JSON.stringify([...prayedRequestIds]));
+};
+
+const saveReactedTestimonies = () => {
+  localStorage.setItem(testimonyReactionStorageKey, JSON.stringify(reactedTestimonies));
 };
 
 const loadLocalGroupStats = () => JSON.parse(localStorage.getItem(localGroupStorageKey) || "{}");
@@ -272,6 +279,9 @@ const normalizeTestimony = (testimony) => ({
   id: testimony.id,
   name: testimony.display_name || testimony.name || "Anonymous",
   message: testimony.message,
+  loveCount: testimony.love_count || testimony.loveCount || 0,
+  celebrateCount: testimony.celebrate_count || testimony.celebrateCount || 0,
+  amenCount: testimony.amen_count || testimony.amenCount || 0,
   createdAt: testimony.created_at || testimony.createdAt || Date.now(),
 });
 
@@ -314,6 +324,7 @@ const renderAuth = () => {
   const userEmail = currentUser?.email || "";
   signUpButton.classList.toggle("hidden", signedIn || resettingPassword);
   logInButton.classList.toggle("hidden", signedIn || resettingPassword);
+  resendConfirmationButton.classList.toggle("hidden", signedIn || resettingPassword);
   forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
   savePasswordButton.classList.toggle("hidden", !resettingPassword);
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
@@ -468,12 +479,38 @@ const renderTestimonies = () => {
 
   testimonyList.innerHTML = testimonies
     .map(
-      (testimony) => `
+      (testimony) => {
+        const selectedReaction = reactedTestimonies[testimony.id];
+        return `
         <article class="testimony-card">
           <p>${escapeHtml(testimony.message)}</p>
           <small>${escapeHtml(testimony.name)} · ${timeAgo(testimony.createdAt)}</small>
+          <div class="testimony-reactions" aria-label="React to this testimony">
+            <button class="reaction-button ${
+              selectedReaction === "love" ? "active" : ""
+            }" type="button" data-testimony-reaction="love" data-testimony-id="${testimony.id}">
+              <span aria-hidden="true">❤️</span>
+              <span>Love</span>
+              <strong>${testimony.loveCount}</strong>
+            </button>
+            <button class="reaction-button ${
+              selectedReaction === "celebrate" ? "active" : ""
+            }" type="button" data-testimony-reaction="celebrate" data-testimony-id="${testimony.id}">
+              <span aria-hidden="true">🎉</span>
+              <span>Celebrate</span>
+              <strong>${testimony.celebrateCount}</strong>
+            </button>
+            <button class="reaction-button ${
+              selectedReaction === "amen" ? "active" : ""
+            }" type="button" data-testimony-reaction="amen" data-testimony-id="${testimony.id}">
+              <span aria-hidden="true">🙏</span>
+              <span>Amen</span>
+              <strong>${testimony.amenCount}</strong>
+            </button>
+          </div>
         </article>
-      `,
+      `;
+      },
     )
     .join("");
 };
@@ -545,7 +582,7 @@ const loadTestimonies = async () => {
 
   const { data, error } = await supabase
     .from("testimonies")
-    .select("id, display_name, message, created_at")
+    .select("id, display_name, message, love_count, celebrate_count, amen_count, created_at")
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -915,10 +952,46 @@ const submitTestimony = async (event) => {
     id: crypto.randomUUID(),
     name,
     message,
+    loveCount: 0,
+    celebrateCount: 0,
+    amenCount: 0,
     createdAt: Date.now(),
   });
   testimonyForm.reset();
   showTestimonyNote("Your testimony has been added on this device.");
+  renderTestimonies();
+};
+
+const reactToTestimony = async (id, reaction) => {
+  if (reactedTestimonies[id]) {
+    showTestimonyNote("You already reacted to this testimony.");
+    return;
+  }
+
+  const testimony = testimonies.find((item) => item.id === id);
+  if (!testimony) return;
+
+  if (usingDatabase) {
+    const { error } = await supabase.rpc("increment_testimony_reaction", {
+      testimony_id: id,
+      reaction_name: reaction,
+    });
+
+    if (error) {
+      showTestimonyNote("Testimony reactions need the latest Supabase update before they can work live.", true);
+      return;
+    }
+
+    reactedTestimonies[id] = reaction;
+    saveReactedTestimonies();
+    await loadTestimonies();
+    return;
+  }
+
+  const countKey = `${reaction}Count`;
+  testimony[countKey] = (testimony[countKey] || 0) + 1;
+  reactedTestimonies[id] = reaction;
+  saveReactedTestimonies();
   renderTestimonies();
 };
 
@@ -958,7 +1031,37 @@ const signUp = async () => {
     return;
   }
 
-  showAuthStatus("Check your email to confirm your account, then log in.");
+  showAuthStatus("Check your inbox and spam folder for the confirmation email.");
+};
+
+const resendConfirmation = async () => {
+  const email = authEmail.value.trim();
+
+  if (!email) {
+    showAuthStatus("Enter your email, then press Resend confirmation.", true);
+    return;
+  }
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: "https://prayerpointcommunity.github.io/",
+    },
+  });
+
+  if (error) {
+    const rateLimited = error.message.toLowerCase().includes("rate limit");
+    showAuthStatus(
+      rateLimited
+        ? "Please wait about 2 minutes before requesting another confirmation email."
+        : error.message,
+      true,
+    );
+    return;
+  }
+
+  showAuthStatus("Confirmation email resent. Check your inbox and spam folder.");
 };
 
 const logIn = async () => {
@@ -1047,6 +1150,7 @@ const handleAuthAction = async (event) => {
 
   if (action === "sign-up") await signUp();
   if (action === "log-in") await logIn();
+  if (action === "resend-confirmation") await resendConfirmation();
   if (action === "forgot-password") await sendPasswordReset();
   if (action === "save-password") await saveNewPassword();
   if (action === "sign-out") await signOut();
@@ -1119,6 +1223,16 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeAccountPanel();
+});
+
+testimonyList.addEventListener("click", async (event) => {
+  const reactionButton = event.target.closest("[data-testimony-reaction]");
+  if (!reactionButton) return;
+
+  await reactToTestimony(
+    reactionButton.dataset.testimonyId,
+    reactionButton.dataset.testimonyReaction,
+  );
 });
 
 list.addEventListener("click", async (event) => {
