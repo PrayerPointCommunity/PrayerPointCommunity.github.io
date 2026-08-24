@@ -107,6 +107,7 @@ const authStatus = document.querySelector("#auth-status");
 const encouragementList = document.querySelector("#encouragement-list");
 const testimonyForm = document.querySelector("#testimony-form");
 const testimonyName = document.querySelector("#testimony-name");
+const testimonyAnonymous = document.querySelector("#testimony-anonymous");
 const testimonyMessage = document.querySelector("#testimony-message");
 const testimonyNote = document.querySelector("#testimony-note");
 const testimonyList = document.querySelector("#testimony-list");
@@ -918,7 +919,7 @@ const encourageRequest = async (id) => {
 
 const submitTestimony = async (event) => {
   event.preventDefault();
-  const name = testimonyName.value.trim() || "Anonymous";
+  const name = testimonyAnonymous.checked ? "Anonymous" : testimonyName.value.trim() || "Anonymous";
   const message = testimonyMessage.value.trim();
 
   if (!message) return;
@@ -944,6 +945,8 @@ const submitTestimony = async (event) => {
 
     showTestimonyNote("Your testimony has been shared.");
     testimonyForm.reset();
+    testimonyName.disabled = false;
+    testimonyName.placeholder = "First name or anonymous";
     await loadTestimonies();
     return;
   }
@@ -958,6 +961,8 @@ const submitTestimony = async (event) => {
     createdAt: Date.now(),
   });
   testimonyForm.reset();
+  testimonyName.disabled = false;
+  testimonyName.placeholder = "First name or anonymous";
   showTestimonyNote("Your testimony has been added on this device.");
   renderTestimonies();
 };
@@ -1199,6 +1204,12 @@ anonymousInput.addEventListener("change", () => {
   nameInput.disabled = anonymousInput.checked;
   nameInput.value = anonymousInput.checked ? "" : nameInput.value;
   nameInput.placeholder = anonymousInput.checked ? "Posting anonymously" : "First name or anonymous";
+});
+
+testimonyAnonymous.addEventListener("change", () => {
+  testimonyName.disabled = testimonyAnonymous.checked;
+  testimonyName.value = testimonyAnonymous.checked ? "" : testimonyName.value;
+  testimonyName.placeholder = testimonyAnonymous.checked ? "Posting anonymously" : "First name or anonymous";
 });
 
 form.addEventListener("submit", submitPrayerRequest);
