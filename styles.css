@@ -490,8 +490,14 @@ h2 {
 }
 
 .stats strong {
+  align-items: center;
   color: var(--teal-dark);
+  display: inline-flex;
   font-size: 2rem;
+  gap: 8px;
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .stats span {
