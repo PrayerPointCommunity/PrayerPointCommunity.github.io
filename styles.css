@@ -126,6 +126,7 @@ nav a:hover {
   gap: 8px;
   min-height: 40px;
   padding: 0 14px;
+  position: relative;
 }
 
 .account-toggle:hover,
@@ -144,6 +145,20 @@ nav a:hover {
 
 .account-dot.signed-in {
   background: var(--teal);
+}
+
+.account-alert {
+  align-items: center;
+  background: #bd3f32;
+  border: 2px solid var(--white);
+  border-radius: 999px;
+  color: var(--white);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 6px;
 }
 
 .account-panel {
@@ -549,6 +564,51 @@ h2 {
 .encouragement-note small,
 .muted-note {
   color: var(--muted);
+}
+
+.message-dialog {
+  align-items: center;
+  background: rgba(31, 42, 45, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 60;
+}
+
+.message-dialog-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(31, 42, 45, 0.22);
+  display: grid;
+  gap: 16px;
+  max-width: 520px;
+  padding: 24px;
+  width: min(100%, 520px);
+}
+
+.message-dialog-card h2 {
+  font-family: var(--display-font);
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.message-dialog-preview {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  color: var(--ink);
+  margin: 0;
+  padding: 12px;
+}
+
+.message-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .workspace {

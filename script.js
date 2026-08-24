@@ -89,6 +89,7 @@ const durationInput = document.querySelector("#duration");
 const accountToggle = document.querySelector("#account-toggle");
 const accountToggleText = document.querySelector("#account-toggle-text");
 const accountDot = document.querySelector("#account-dot");
+const accountAlert = document.querySelector("#account-alert");
 const accountPanel = document.querySelector("#account-panel");
 const accountClose = document.querySelector("#account-close");
 const profileStatus = document.querySelector("#profile-status");
@@ -105,6 +106,13 @@ const savePasswordButton = document.querySelector("#save-password-button");
 const signOutButton = document.querySelector("#sign-out-button");
 const authStatus = document.querySelector("#auth-status");
 const encouragementList = document.querySelector("#encouragement-list");
+const inboxTitle = document.querySelector("#inbox-title");
+const encouragementDialog = document.querySelector("#encouragement-dialog");
+const encouragementForm = document.querySelector("#encouragement-form");
+const encouragementMessage = document.querySelector("#encouragement-message");
+const encouragementRequestPreview = document.querySelector("#encouragement-request-preview");
+const encouragementDialogNote = document.querySelector("#encouragement-dialog-note");
+const encouragementCancel = document.querySelector("#encouragement-cancel");
 const testimonyForm = document.querySelector("#testimony-form");
 const testimonyName = document.querySelector("#testimony-name");
 const testimonyAnonymous = document.querySelector("#testimony-anonymous");
@@ -161,6 +169,7 @@ let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let signUpCooldownTimer = null;
+let encouragementRequestId = null;
 
 const getGroupVisitorKey = () => {
   const existingKey = localStorage.getItem(groupVisitorStorageKey);
@@ -333,6 +342,9 @@ const renderAuth = () => {
   authPassword.disabled = signedIn && !resettingPassword;
   accountToggleText.textContent = signedIn ? "Account" : "Guest";
   accountDot.classList.toggle("signed-in", signedIn);
+  accountAlert.classList.add("hidden");
+  accountAlert.textContent = "0";
+  inboxTitle.textContent = "Your encouragement";
   profileLoginState.textContent = signedIn ? "Signed in" : "Guest";
   profileEmail.textContent = signedIn ? userEmail : "Not signed in";
 
@@ -350,6 +362,9 @@ const renderAuth = () => {
 
 const renderEncouragements = async () => {
   if (!currentUser || !usingDatabase) {
+    accountAlert.classList.add("hidden");
+    accountAlert.textContent = "0";
+    inboxTitle.textContent = "Your encouragement";
     encouragementList.innerHTML =
       '<p class="muted-note">Sign in to see encouragement sent to your prayer requests.</p>';
     return;
@@ -362,10 +377,23 @@ const renderEncouragements = async () => {
     .limit(10);
 
   if (error) {
+    accountAlert.classList.add("hidden");
+    accountAlert.textContent = "0";
+    inboxTitle.textContent = "Your encouragement";
     encouragementList.innerHTML =
       '<p class="muted-note">Encouragement messages will appear here after the database setup is complete.</p>';
     return;
   }
+
+  const receivedCount = data.filter((item) => item.recipient_id === currentUser.id).length;
+  accountAlert.textContent = receivedCount > 9 ? "9+" : String(receivedCount);
+  accountAlert.classList.toggle("hidden", receivedCount === 0);
+  inboxTitle.textContent =
+    receivedCount === 0
+      ? "Your encouragement"
+      : receivedCount === 1
+        ? "Your encouragement (1)"
+        : `Your encouragement (${receivedCount})`;
 
   if (!data.length) {
     encouragementList.innerHTML =
@@ -881,7 +909,19 @@ const deletePrayerRequest = async (id) => {
   showFormNote("Prayer request removed.");
 };
 
-const encourageRequest = async (id) => {
+const showEncouragementDialogNote = (message, isError = false) => {
+  encouragementDialogNote.textContent = message;
+  encouragementDialogNote.classList.toggle("error", isError);
+};
+
+const closeEncouragementDialog = () => {
+  encouragementRequestId = null;
+  encouragementForm.reset();
+  showEncouragementDialogNote("");
+  encouragementDialog.classList.add("hidden");
+};
+
+const openEncouragementDialog = (id) => {
   const request = requests.find((item) => item.id === id);
   if (!request) return;
   if (!requireSignIn()) return;
@@ -891,11 +931,26 @@ const encourageRequest = async (id) => {
     return;
   }
 
-  const message = window.prompt("Write a short encouragement message:");
-  if (!message?.trim()) return;
+  encouragementRequestId = id;
+  encouragementRequestPreview.textContent = request.message;
+  showEncouragementDialogNote("");
+  encouragementDialog.classList.remove("hidden");
+  encouragementMessage.focus();
+};
+
+const sendEncouragement = async (event) => {
+  event.preventDefault();
+  const request = requests.find((item) => item.id === encouragementRequestId);
+  if (!request) {
+    closeEncouragementDialog();
+    return;
+  }
+
+  const message = encouragementMessage.value.trim();
+  if (!message) return;
 
   if (hasBlockedWords(message)) {
-    showFormNote("Please remove vulgar or offensive words before sending encouragement.", true);
+    showEncouragementDialogNote("Please remove vulgar or offensive words before sending encouragement.", true);
     return;
   }
 
@@ -909,10 +964,11 @@ const encourageRequest = async (id) => {
   });
 
   if (error) {
-    showFormNote("Encouragement could not be sent yet. Check the Supabase setup.", true);
+    showEncouragementDialogNote("Encouragement could not be sent yet. Check the Supabase setup.", true);
     return;
   }
 
+  closeEncouragementDialog();
   showFormNote("Your encouragement was sent privately.");
   await renderEncouragements();
 };
@@ -1219,6 +1275,12 @@ authForm.addEventListener("click", handleAuthAction);
 authForm.addEventListener("submit", (event) => event.preventDefault());
 accountToggle.addEventListener("click", toggleAccountPanel);
 accountClose.addEventListener("click", closeAccountPanel);
+encouragementForm.addEventListener("submit", sendEncouragement);
+encouragementCancel.addEventListener("click", closeEncouragementDialog);
+
+encouragementDialog.addEventListener("click", (event) => {
+  if (event.target === encouragementDialog) closeEncouragementDialog();
+});
 
 document.addEventListener("click", (event) => {
   if (
@@ -1233,7 +1295,10 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeAccountPanel();
+  if (event.key === "Escape") {
+    closeAccountPanel();
+    if (!encouragementDialog.classList.contains("hidden")) closeEncouragementDialog();
+  }
 });
 
 testimonyList.addEventListener("click", async (event) => {
@@ -1257,7 +1322,7 @@ list.addEventListener("click", async (event) => {
 
   if (prayButton) await prayForRequest(prayButton.dataset.pray);
   if (unprayButton) await undoPrayerForRequest(unprayButton.dataset.unpray);
-  if (encourageButton) await encourageRequest(encourageButton.dataset.encourage);
+  if (encourageButton) openEncouragementDialog(encourageButton.dataset.encourage);
   if (shareButton) await shareRequest(shareButton.dataset.share);
   if (deleteButton) await deletePrayerRequest(deleteButton.dataset.deleteRequest);
   if (copyButton) await copyShareLink(copyButton.dataset.copyLink);

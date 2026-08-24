@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260825-testimony-anonymous" />
+    <link rel="stylesheet" href="styles.css?v=20260825-encouragement-box" />
   </head>
   <body>
     <header class="topbar">
@@ -23,6 +23,7 @@
       <button class="account-toggle" type="button" id="account-toggle" aria-expanded="false" aria-controls="account-panel">
         <span id="account-dot" class="account-dot"></span>
         <span id="account-toggle-text">Guest</span>
+        <span id="account-alert" class="account-alert hidden" aria-label="Unread encouragement">0</span>
       </button>
     </header>
 
@@ -78,6 +79,31 @@
           </div>
         </aside>
       </div>
+    </section>
+
+    <section id="encouragement-dialog" class="message-dialog hidden" aria-labelledby="encouragement-dialog-title" role="dialog" aria-modal="true">
+      <form id="encouragement-form" class="message-dialog-card">
+        <div>
+          <p class="eyebrow">Private encouragement</p>
+          <h2 id="encouragement-dialog-title">Encourage this person</h2>
+        </div>
+        <p id="encouragement-request-preview" class="message-dialog-preview"></p>
+        <label>
+          Encouragement message
+          <textarea
+            id="encouragement-message"
+            rows="4"
+            maxlength="280"
+            placeholder="Write a short kind message or prayer."
+            required
+          ></textarea>
+        </label>
+        <div class="message-dialog-actions">
+          <button class="button primary" type="submit">Send encouragement</button>
+          <button class="button outline" type="button" id="encouragement-cancel">Cancel</button>
+        </div>
+        <p id="encouragement-dialog-note" class="form-note" role="status"></p>
+      </form>
     </section>
 
     <main id="home">
@@ -315,6 +341,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260825-testimony-anonymous"></script>
+    <script type="module" src="script.js?v=20260825-encouragement-box"></script>
   </body>
 </html>
