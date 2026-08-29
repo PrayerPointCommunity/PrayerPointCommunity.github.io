@@ -166,7 +166,6 @@ let usingDatabase = true;
 let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
-let signUpCooldownTimer = null;
 let encouragementRequestId = null;
 
 const getGroupVisitorKey = () => {
@@ -234,32 +233,6 @@ const showAuthStatus = (message, isError = false) => {
 const showTestimonyNote = (message, isError = false) => {
   testimonyNote.textContent = message;
   testimonyNote.classList.toggle("error", isError);
-};
-
-const startSignUpCooldown = (seconds = 120) => {
-  clearInterval(signUpCooldownTimer);
-  let remainingSeconds = seconds;
-
-  const updateButton = () => {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const secondsLeft = remainingSeconds % 60;
-    signUpButton.disabled = true;
-    signUpButton.textContent = `Wait ${minutes}:${String(secondsLeft).padStart(2, "0")}`;
-  };
-
-  updateButton();
-  signUpCooldownTimer = setInterval(() => {
-    remainingSeconds -= 1;
-
-    if (remainingSeconds <= 0) {
-      clearInterval(signUpCooldownTimer);
-      signUpButton.disabled = false;
-      signUpButton.textContent = "Sign up";
-      return;
-    }
-
-    updateButton();
-  }, 1000);
 };
 
 const timeAgo = (timestamp) => {
@@ -336,6 +309,8 @@ const renderAuth = () => {
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
   authEmail.disabled = signedIn;
   authPassword.disabled = signedIn && !resettingPassword;
+  signUpButton.disabled = false;
+  signUpButton.textContent = "Sign up";
   accountToggleText.textContent = signedIn ? "Account" : "Guest";
   accountDot.classList.toggle("signed-in", signedIn);
   accountAlert.classList.add("hidden");
@@ -1069,7 +1044,6 @@ const signUp = async () => {
     return;
   }
 
-  startSignUpCooldown();
   showAuthStatus("Sending confirmation email. Please wait before trying again.");
 
   const { error } = await supabase.auth.signUp({
