@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260825-encouragement-remove" />
+    <link rel="stylesheet" href="styles.css?v=20260829-signup-otp" />
   </head>
   <body>
     <header class="topbar">
@@ -61,8 +61,16 @@
             Password
             <input id="auth-password" name="auth-password" type="password" minlength="6" placeholder="At least 6 characters" required />
           </label>
+          <div id="auth-otp-section" class="otp-section hidden">
+            <label>
+              Email verification code
+              <input id="auth-otp" name="auth-otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Enter 6-digit code" />
+            </label>
+            <p class="muted-note">Check your email for the code, then verify it here.</p>
+          </div>
           <div class="auth-actions">
             <button class="button primary" type="button" id="sign-up-button" data-auth-action="sign-up">Sign up</button>
+            <button class="button primary hidden" type="button" id="verify-otp-button" data-auth-action="verify-otp">Verify code</button>
             <button class="button outline" type="button" id="log-in-button" data-auth-action="log-in">Log in</button>
             <button class="button outline" type="button" id="resend-confirmation-button" data-auth-action="resend-confirmation">Resend confirmation</button>
             <button class="button outline" type="button" id="forgot-password-button" data-auth-action="forgot-password">Forgot password?</button>
@@ -341,6 +349,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260825-encouragement-remove"></script>
+    <script type="module" src="script.js?v=20260829-signup-otp"></script>
   </body>
 </html>

@@ -539,6 +539,19 @@ h2 {
   gap: 10px;
 }
 
+.otp-section {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.otp-section .muted-note {
+  margin: 0;
+}
+
 .encouragement-inbox h3 {
   color: var(--teal-dark);
   font-family: var(--display-font);
