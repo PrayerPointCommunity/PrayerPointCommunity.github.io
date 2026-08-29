@@ -100,8 +100,6 @@ const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
 const signUpButton = document.querySelector("#sign-up-button");
 const logInButton = document.querySelector("#log-in-button");
-const resendConfirmationButton = document.querySelector("#resend-confirmation-button");
-const forgotPasswordButton = document.querySelector("#forgot-password-button");
 const savePasswordButton = document.querySelector("#save-password-button");
 const signOutButton = document.querySelector("#sign-out-button");
 const authStatus = document.querySelector("#auth-status");
@@ -334,8 +332,6 @@ const renderAuth = () => {
   const userEmail = currentUser?.email || "";
   signUpButton.classList.toggle("hidden", signedIn || resettingPassword);
   logInButton.classList.toggle("hidden", signedIn || resettingPassword);
-  resendConfirmationButton.classList.toggle("hidden", signedIn || resettingPassword);
-  forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
   savePasswordButton.classList.toggle("hidden", !resettingPassword);
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
   authEmail.disabled = signedIn;
@@ -1098,36 +1094,6 @@ const signUp = async () => {
   showAuthStatus("Check your inbox and spam folder for the confirmation email.");
 };
 
-const resendConfirmation = async () => {
-  const email = authEmail.value.trim();
-
-  if (!email) {
-    showAuthStatus("Enter your email, then press Resend confirmation.", true);
-    return;
-  }
-
-  const { error } = await supabase.auth.resend({
-    type: "signup",
-    email,
-    options: {
-      emailRedirectTo: "https://prayerpointcommunity.github.io/",
-    },
-  });
-
-  if (error) {
-    const rateLimited = error.message.toLowerCase().includes("rate limit");
-    showAuthStatus(
-      rateLimited
-        ? "Please wait about 2 minutes before requesting another confirmation email."
-        : error.message,
-      true,
-    );
-    return;
-  }
-
-  showAuthStatus("Confirmation email resent. Check your inbox and spam folder.");
-};
-
 const logIn = async () => {
   const email = authEmail.value.trim();
   const password = authPassword.value;
@@ -1155,26 +1121,6 @@ const logIn = async () => {
   currentUser = data.user;
   renderAuth();
   await renderEncouragements();
-};
-
-const sendPasswordReset = async () => {
-  const email = authEmail.value.trim();
-
-  if (!email) {
-    showAuthStatus("Enter your email, then press Forgot password.", true);
-    return;
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://prayerpointcommunity.github.io/",
-  });
-
-  if (error) {
-    showAuthStatus(error.message, true);
-    return;
-  }
-
-  showAuthStatus("Password reset email sent. Open the link, then set a new password here.");
 };
 
 const saveNewPassword = async () => {
@@ -1214,8 +1160,6 @@ const handleAuthAction = async (event) => {
 
   if (action === "sign-up") await signUp();
   if (action === "log-in") await logIn();
-  if (action === "resend-confirmation") await resendConfirmation();
-  if (action === "forgot-password") await sendPasswordReset();
   if (action === "save-password") await saveNewPassword();
   if (action === "sign-out") await signOut();
 };
