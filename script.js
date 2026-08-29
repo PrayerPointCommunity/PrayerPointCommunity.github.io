@@ -74,7 +74,6 @@ const prayedStorageKey = "prayer-circle-prayed-requests";
 const testimonyReactionStorageKey = "prayer-circle-testimony-reactions";
 const groupVisitorStorageKey = "prayer-circle-group-visitor";
 const localGroupStorageKey = "prayer-circle-groups";
-const pendingSignupStorageKey = "prayerpoint-pending-signup-email";
 const list = document.querySelector("#prayer-list");
 const form = document.querySelector("#share");
 const filter = document.querySelector("#filter");
@@ -99,10 +98,7 @@ const profileEmail = document.querySelector("#profile-email");
 const authForm = document.querySelector("#auth-form");
 const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
-const authOtpSection = document.querySelector("#auth-otp-section");
-const authOtp = document.querySelector("#auth-otp");
 const signUpButton = document.querySelector("#sign-up-button");
-const verifyOtpButton = document.querySelector("#verify-otp-button");
 const logInButton = document.querySelector("#log-in-button");
 const resendConfirmationButton = document.querySelector("#resend-confirmation-button");
 const forgotPasswordButton = document.querySelector("#forgot-password-button");
@@ -174,7 +170,6 @@ let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey)
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let signUpCooldownTimer = null;
 let encouragementRequestId = null;
-let pendingSignupEmail = localStorage.getItem(pendingSignupStorageKey) || "";
 
 const getGroupVisitorKey = () => {
   const existingKey = localStorage.getItem(groupVisitorStorageKey);
@@ -337,16 +332,13 @@ const renderDailyVerse = () => {
 const renderAuth = () => {
   const signedIn = Boolean(currentUser);
   const userEmail = currentUser?.email || "";
-  const waitingForOtp = Boolean(pendingSignupEmail) && !signedIn && !resettingPassword;
-  signUpButton.classList.toggle("hidden", signedIn || resettingPassword || waitingForOtp);
-  verifyOtpButton.classList.toggle("hidden", !waitingForOtp);
-  logInButton.classList.toggle("hidden", signedIn || resettingPassword || waitingForOtp);
+  signUpButton.classList.toggle("hidden", signedIn || resettingPassword);
+  logInButton.classList.toggle("hidden", signedIn || resettingPassword);
   resendConfirmationButton.classList.toggle("hidden", signedIn || resettingPassword);
-  forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword || waitingForOtp);
+  forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
   savePasswordButton.classList.toggle("hidden", !resettingPassword);
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
-  authOtpSection.classList.toggle("hidden", !waitingForOtp);
-  authEmail.disabled = signedIn || waitingForOtp;
+  authEmail.disabled = signedIn;
   authPassword.disabled = signedIn && !resettingPassword;
   accountToggleText.textContent = signedIn ? "Account" : "Guest";
   accountDot.classList.toggle("signed-in", signedIn);
@@ -362,10 +354,6 @@ const renderAuth = () => {
   } else if (signedIn) {
     showAuthStatus(`Signed in as ${userEmail}.`);
     profileStatus.textContent = "You are signed in. Encouragement sent to your prayer requests will appear here.";
-  } else if (waitingForOtp) {
-    authEmail.value = pendingSignupEmail;
-    showAuthStatus("Enter the verification code from your email to finish signing up.");
-    profileStatus.textContent = "Your email is waiting for verification. Enter the code to finish creating the account.";
   } else {
     showAuthStatus("You are browsing as a guest.");
     profileStatus.textContent = "Create an account or log in to post prayers, share testimonies, and receive encouragement.";
@@ -1107,10 +1095,7 @@ const signUp = async () => {
     return;
   }
 
-  pendingSignupEmail = email;
-  localStorage.setItem(pendingSignupStorageKey, email);
-  renderAuth();
-  showAuthStatus("Check your inbox and spam folder for the verification code, then enter it here.");
+  showAuthStatus("Check your inbox and spam folder for the confirmation email.");
 };
 
 const resendConfirmation = async () => {
@@ -1140,44 +1125,7 @@ const resendConfirmation = async () => {
     return;
   }
 
-  pendingSignupEmail = email;
-  localStorage.setItem(pendingSignupStorageKey, email);
-  renderAuth();
-  showAuthStatus("Verification code resent. Check your inbox and spam folder, then enter it here.");
-};
-
-const verifySignupOtp = async () => {
-  const email = pendingSignupEmail || authEmail.value.trim();
-  const token = authOtp.value.trim();
-
-  if (!email) {
-    showAuthStatus("Enter your email before verifying the code.", true);
-    return;
-  }
-
-  if (!token) {
-    showAuthStatus("Enter the verification code from your email.", true);
-    return;
-  }
-
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: "signup",
-  });
-
-  if (error) {
-    showAuthStatus("That code did not work. Check the code or request a new one.", true);
-    return;
-  }
-
-  currentUser = data.user;
-  pendingSignupEmail = "";
-  localStorage.removeItem(pendingSignupStorageKey);
-  authOtp.value = "";
-  authPassword.value = "";
-  renderAuth();
-  await renderEncouragements();
+  showAuthStatus("Confirmation email resent. Check your inbox and spam folder.");
 };
 
 const logIn = async () => {
@@ -1205,9 +1153,6 @@ const logIn = async () => {
   }
 
   currentUser = data.user;
-  pendingSignupEmail = "";
-  localStorage.removeItem(pendingSignupStorageKey);
-  authOtp.value = "";
   renderAuth();
   await renderEncouragements();
 };
@@ -1256,9 +1201,6 @@ const saveNewPassword = async () => {
 const signOut = async () => {
   await supabase.auth.signOut();
   currentUser = null;
-  pendingSignupEmail = "";
-  localStorage.removeItem(pendingSignupStorageKey);
-  authOtp.value = "";
   renderAuth();
   await renderEncouragements();
 };
@@ -1271,7 +1213,6 @@ const handleAuthAction = async (event) => {
   const action = actionButton.dataset.authAction;
 
   if (action === "sign-up") await signUp();
-  if (action === "verify-otp") await verifySignupOtp();
   if (action === "log-in") await logIn();
   if (action === "resend-confirmation") await resendConfirmation();
   if (action === "forgot-password") await sendPasswordReset();
@@ -1330,9 +1271,6 @@ const handleAuthRedirect = async () => {
     resettingPassword = true;
     showAuthStatus("Enter a new password, then press Save new password.");
   } else {
-    pendingSignupEmail = "";
-    localStorage.removeItem(pendingSignupStorageKey);
-    authOtp.value = "";
     showAuthStatus("Your account is confirmed and you are signed in.");
   }
 
