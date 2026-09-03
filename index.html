@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-no-auth-timer" />
+    <link rel="stylesheet" href="styles.css?v=20260903-testimony-duration" />
   </head>
   <body>
     <header class="topbar">
@@ -18,7 +18,6 @@
       <nav aria-label="Main navigation">
         <a href="#requests">Pray</a>
         <a href="#testimonies">Testimonies</a>
-        <a href="#connect">Groups</a>
       </nav>
       <button class="account-toggle" type="button" id="account-toggle" aria-expanded="false" aria-controls="account-panel">
         <span id="account-dot" class="account-dot"></span>
@@ -116,7 +115,6 @@
           <div class="hero-actions">
             <a class="button primary" href="#share">Share a prayer point</a>
             <a class="button secondary" href="#requests">Pray for someone</a>
-            <a class="button secondary" href="#connect">Join a prayer group</a>
             <a class="button secondary" href="#quiet-time">Quiet Time</a>
           </div>
         </div>
@@ -282,6 +280,15 @@
               required
             ></textarea>
           </label>
+          <label>
+            Keep this testimony on the wall
+            <select id="testimony-duration" name="testimony-duration">
+              <option value="1">1 day</option>
+              <option value="3">3 days</option>
+              <option value="7" selected>7 days</option>
+              <option value="14">14 days</option>
+            </select>
+          </label>
           <button class="button primary full" type="submit">Share testimony</button>
           <p id="testimony-note" class="form-note" role="status"></p>
         </form>
@@ -289,19 +296,6 @@
         <div id="testimony-list" class="testimony-list">
           <div class="empty-state">No testimonies yet. Be the first to share an answered prayer.</div>
         </div>
-      </section>
-
-      <section id="connect" class="connect-band" aria-labelledby="connect-title">
-        <div>
-          <p class="eyebrow">Groups</p>
-          <h2 id="connect-title">Prayer groups</h2>
-          <p>
-            Join others in praying around shared needs without sharing personal
-            contact details. Choose a topic, join the group, and mark when you
-            have prayed today.
-          </p>
-        </div>
-        <div id="prayer-group-list" class="prayer-group-list"></div>
       </section>
 
       <section id="quiet-time" class="quiet-time-band" aria-labelledby="quiet-time-title">
@@ -339,6 +333,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260829-no-auth-timer"></script>
+    <script type="module" src="script.js?v=20260903-testimony-duration"></script>
   </body>
 </html>

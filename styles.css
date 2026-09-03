@@ -971,106 +971,6 @@ input:disabled {
   font-size: 0.86rem;
 }
 
-.connect-band {
-  align-items: start;
-  background: var(--teal-dark);
-  color: var(--white);
-  display: grid;
-  gap: 30px;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  padding: clamp(34px, 6vw, 80px) clamp(18px, 5vw, 72px);
-}
-
-.connect-band p {
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.7;
-  max-width: 560px;
-}
-
-.prayer-group-list {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.prayer-group-card {
-  align-items: start;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  color: var(--white);
-  display: grid;
-  gap: 14px;
-  grid-template-columns: 44px minmax(0, 1fr);
-  padding: 18px;
-  text-align: left;
-}
-
-.prayer-group-card:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.group-number {
-  align-items: center;
-  background: var(--gold);
-  border-radius: 50%;
-  color: #241b0a;
-  display: inline-flex;
-  font-weight: 900;
-  height: 42px;
-  justify-content: center;
-  width: 42px;
-}
-
-.prayer-group-card h3 {
-  font-family: var(--display-font);
-  font-size: 1.25rem;
-  margin: 0 0 6px;
-}
-
-.prayer-group-card p {
-  margin: 0 0 8px;
-}
-
-.prayer-group-card small {
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.5;
-}
-
-.group-stats,
-.group-actions {
-  grid-column: 1 / -1;
-}
-
-.group-stats {
-  display: grid;
-  gap: 3px 8px;
-  grid-template-columns: repeat(4, auto);
-  justify-content: start;
-}
-
-.group-stats strong {
-  color: var(--gold);
-  font-weight: 900;
-}
-
-.group-stats span {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.9rem;
-}
-
-.group-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.group-actions .ghost-button {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: var(--white);
-}
-
 footer {
   color: var(--muted);
   padding: 28px clamp(18px, 5vw, 72px);
@@ -1081,8 +981,7 @@ footer {
   .daily-verse,
   .quiet-time-band,
   .workspace,
-  .testimony-band,
-  .connect-band {
+  .testimony-band {
     grid-template-columns: 1fr;
   }
 

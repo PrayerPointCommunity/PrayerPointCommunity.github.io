@@ -72,8 +72,6 @@ const blockedWords = [
 const storageKey = "prayer-circle-requests";
 const prayedStorageKey = "prayer-circle-prayed-requests";
 const testimonyReactionStorageKey = "prayer-circle-testimony-reactions";
-const groupVisitorStorageKey = "prayer-circle-group-visitor";
-const localGroupStorageKey = "prayer-circle-groups";
 const list = document.querySelector("#prayer-list");
 const form = document.querySelector("#share");
 const filter = document.querySelector("#filter");
@@ -115,66 +113,18 @@ const testimonyForm = document.querySelector("#testimony-form");
 const testimonyName = document.querySelector("#testimony-name");
 const testimonyAnonymous = document.querySelector("#testimony-anonymous");
 const testimonyMessage = document.querySelector("#testimony-message");
+const testimonyDuration = document.querySelector("#testimony-duration");
 const testimonyNote = document.querySelector("#testimony-note");
 const testimonyList = document.querySelector("#testimony-list");
-const prayerGroupList = document.querySelector("#prayer-group-list");
-
-const prayerGroups = [
-  {
-    key: "peace-world",
-    title: "Peace in the world",
-    description: "Pray for peace, mercy, and protection where communities are hurting.",
-    focus: "Peace, protection, and comfort for those affected by conflict.",
-  },
-  {
-    key: "war-conflict",
-    title: "War and conflict",
-    description: "Pray for people in war zones, displaced families, and wise peacemaking.",
-    focus: "An end to violence and strength for those suffering.",
-  },
-  {
-    key: "families",
-    title: "Families",
-    description: "Pray for homes, marriages, parents, children, and reconciliation.",
-    focus: "Healing, patience, unity, and love in families.",
-  },
-  {
-    key: "healing",
-    title: "Healing",
-    description: "Pray for people facing sickness, anxiety, grief, or recovery.",
-    focus: "Strength, healing, and hope for body, mind, and spirit.",
-  },
-  {
-    key: "youth-students",
-    title: "Youth and students",
-    description: "Pray for young people, schools, exams, friendships, and purpose.",
-    focus: "Wisdom, protection, confidence, and good direction.",
-  },
-  {
-    key: "leaders-nations",
-    title: "Leaders and nations",
-    description: "Pray for leaders to choose justice, mercy, and wisdom.",
-    focus: "Righteous leadership and care for vulnerable people.",
-  },
-];
 
 let requests = [];
 let testimonies = [];
-let groupStats = {};
 let currentUser = null;
 let usingDatabase = true;
 let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let encouragementRequestId = null;
-
-const getGroupVisitorKey = () => {
-  const existingKey = localStorage.getItem(groupVisitorStorageKey);
-  if (existingKey) return existingKey;
-  const newKey = crypto.randomUUID();
-  localStorage.setItem(groupVisitorStorageKey, newKey);
-  return newKey;
-};
 
 const loadLocalRequests = () => {
   const saved = localStorage.getItem(storageKey);
@@ -191,12 +141,6 @@ const savePrayedRequestIds = () => {
 
 const saveReactedTestimonies = () => {
   localStorage.setItem(testimonyReactionStorageKey, JSON.stringify(reactedTestimonies));
-};
-
-const loadLocalGroupStats = () => JSON.parse(localStorage.getItem(localGroupStorageKey) || "{}");
-
-const saveLocalGroupStats = () => {
-  localStorage.setItem(localGroupStorageKey, JSON.stringify(groupStats));
 };
 
 const escapeHtml = (value) =>
@@ -258,12 +202,14 @@ const normalizeRequest = (request) => ({
 
 const normalizeTestimony = (testimony) => ({
   id: testimony.id,
+  userId: testimony.user_id || testimony.userId || null,
   name: testimony.display_name || testimony.name || "Anonymous",
   message: testimony.message,
   loveCount: testimony.love_count || testimony.loveCount || 0,
   celebrateCount: testimony.celebrate_count || testimony.celebrateCount || 0,
   amenCount: testimony.amen_count || testimony.amenCount || 0,
   createdAt: testimony.created_at || testimony.createdAt || Date.now(),
+  expiresAt: testimony.expires_at || testimony.expiresAt || null,
 });
 
 const getShareTargetId = () => new URLSearchParams(window.location.search).get("prayer");
@@ -484,10 +430,12 @@ const renderTestimonies = () => {
     .map(
       (testimony) => {
         const selectedReaction = reactedTestimonies[testimony.id];
+        const canDelete =
+          !usingDatabase || (currentUser?.id && testimony.userId === currentUser.id);
         return `
         <article class="testimony-card">
           <p>${escapeHtml(testimony.message)}</p>
-          <small>${escapeHtml(testimony.name)} · ${timeAgo(testimony.createdAt)}</small>
+          <small>${escapeHtml(testimony.name)} · ${timeAgo(testimony.createdAt)} · ${formatExpiry(testimony.expiresAt)}</small>
           <div class="testimony-reactions" aria-label="React to this testimony">
             <button class="reaction-button ${
               selectedReaction === "love" ? "active" : ""
@@ -510,45 +458,16 @@ const renderTestimonies = () => {
               <span>Amen</span>
               <strong>${testimony.amenCount}</strong>
             </button>
+            ${
+              canDelete
+                ? `<button class="ghost-button danger-button" type="button" data-delete-testimony="${testimony.id}">Remove</button>`
+                : ""
+            }
           </div>
         </article>
       `;
       },
     )
-    .join("");
-};
-
-const renderPrayerGroups = () => {
-  prayerGroupList.innerHTML = prayerGroups
-    .map((group) => {
-      const stats = groupStats[group.key] || {};
-      const joined = Boolean(stats.joined);
-      const prayedToday = stats.prayedToday === new Date().toISOString().slice(0, 10);
-      return `
-        <article class="prayer-group-card">
-          <span class="group-number">${escapeHtml(group.title.slice(0, 2).toUpperCase())}</span>
-          <div>
-            <h3>${escapeHtml(group.title)}</h3>
-            <p>${escapeHtml(group.description)}</p>
-            <small>${escapeHtml(group.focus)}</small>
-          </div>
-          <div class="group-stats">
-            <strong>${stats.members || 0}</strong>
-            <span>joined</span>
-            <strong>${stats.prayers || 0}</strong>
-            <span>prayers</span>
-          </div>
-          <div class="group-actions">
-            <button class="mini-button" type="button" data-join-group="${group.key}" ${
-              joined ? "disabled" : ""
-            }>${joined ? "Joined" : "Join group"}</button>
-            <button class="ghost-button" type="button" data-pray-group="${group.key}" ${
-              prayedToday ? "disabled" : ""
-            }>${prayedToday ? "Prayed today" : "I prayed today"}</button>
-          </div>
-        </article>
-      `;
-    })
     .join("");
 };
 
@@ -585,7 +504,8 @@ const loadTestimonies = async () => {
 
   const { data, error } = await supabase
     .from("testimonies")
-    .select("id, display_name, message, love_count, celebrate_count, amen_count, created_at")
+    .select("id, user_id, display_name, message, love_count, celebrate_count, amen_count, created_at, expires_at")
+    .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -597,40 +517,6 @@ const loadTestimonies = async () => {
   }
 
   renderTestimonies();
-};
-
-const loadPrayerGroups = async () => {
-  const visitorKey = getGroupVisitorKey();
-
-  if (!usingDatabase) {
-    groupStats = loadLocalGroupStats();
-    renderPrayerGroups();
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from("prayer_group_activity")
-    .select("group_key, visitor_key, joined, prayed_count, prayed_today_on");
-
-  if (error) {
-    groupStats = loadLocalGroupStats();
-    renderPrayerGroups();
-    return;
-  }
-
-  groupStats = {};
-  prayerGroups.forEach((group) => {
-    const rows = data.filter((item) => item.group_key === group.key);
-    const ownRow = rows.find((item) => item.visitor_key === visitorKey);
-    groupStats[group.key] = {
-      members: rows.filter((item) => item.joined).length,
-      prayers: rows.reduce((sum, item) => sum + (item.prayed_count || 0), 0),
-      joined: Boolean(ownRow?.joined),
-      prayedToday: ownRow?.prayed_today_on || "",
-    };
-  });
-
-  renderPrayerGroups();
 };
 
 const requireSignIn = () => {
@@ -734,59 +620,6 @@ const nativeShareRequest = async (id) => {
   } catch (_error) {
     showFormNote("Sharing was cancelled.");
   }
-};
-
-const joinPrayerGroup = async (groupKey) => {
-  const visitorKey = getGroupVisitorKey();
-
-  if (usingDatabase) {
-    const { error } = await supabase.rpc("join_prayer_group", {
-      group_name: groupKey,
-      visitor: visitorKey,
-    });
-
-    if (!error) {
-      await loadPrayerGroups();
-      return;
-    }
-  }
-
-  groupStats = loadLocalGroupStats();
-  groupStats[groupKey] = {
-    ...(groupStats[groupKey] || {}),
-    members: (groupStats[groupKey]?.members || 0) + 1,
-    joined: true,
-  };
-  saveLocalGroupStats();
-  renderPrayerGroups();
-};
-
-const prayInPrayerGroup = async (groupKey) => {
-  const visitorKey = getGroupVisitorKey();
-  const today = new Date().toISOString().slice(0, 10);
-
-  if (groupStats[groupKey]?.prayedToday === today) return;
-
-  if (usingDatabase) {
-    const { error } = await supabase.rpc("pray_in_group", {
-      group_name: groupKey,
-      visitor: visitorKey,
-    });
-
-    if (!error) {
-      await loadPrayerGroups();
-      return;
-    }
-  }
-
-  groupStats = loadLocalGroupStats();
-  groupStats[groupKey] = {
-    ...(groupStats[groupKey] || {}),
-    prayers: (groupStats[groupKey]?.prayers || 0) + 1,
-    prayedToday: today,
-  };
-  saveLocalGroupStats();
-  renderPrayerGroups();
 };
 
 const prayForRequest = async (id) => {
@@ -951,6 +784,8 @@ const submitTestimony = async (event) => {
   event.preventDefault();
   const name = testimonyAnonymous.checked ? "Anonymous" : testimonyName.value.trim() || "Anonymous";
   const message = testimonyMessage.value.trim();
+  const durationDays = Number(testimonyDuration.value || 7);
+  const expiresAt = new Date(Date.now() + durationDays * 86400000).toISOString();
 
   if (!message) return;
 
@@ -966,6 +801,7 @@ const submitTestimony = async (event) => {
       user_id: currentUser.id,
       display_name: name,
       message,
+      expires_at: expiresAt,
     });
 
     if (error) {
@@ -977,6 +813,7 @@ const submitTestimony = async (event) => {
     testimonyForm.reset();
     testimonyName.disabled = false;
     testimonyName.placeholder = "First name or anonymous";
+    testimonyDuration.value = "7";
     await loadTestimonies();
     return;
   }
@@ -989,10 +826,12 @@ const submitTestimony = async (event) => {
     celebrateCount: 0,
     amenCount: 0,
     createdAt: Date.now(),
+    expiresAt,
   });
   testimonyForm.reset();
   testimonyName.disabled = false;
   testimonyName.placeholder = "First name or anonymous";
+  testimonyDuration.value = "7";
   showTestimonyNote("Your testimony has been added on this device.");
   renderTestimonies();
 };
@@ -1028,6 +867,44 @@ const reactToTestimony = async (id, reaction) => {
   reactedTestimonies[id] = reaction;
   saveReactedTestimonies();
   renderTestimonies();
+};
+
+const deleteTestimony = async (id) => {
+  const testimony = testimonies.find((item) => item.id === id);
+  if (!testimony) return;
+
+  const shouldDelete = window.confirm("Remove this testimony from the wall?");
+  if (!shouldDelete) return;
+
+  if (usingDatabase) {
+    if (!currentUser || testimony.userId !== currentUser.id) {
+      showTestimonyNote("You can only remove testimonies you posted.", true);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("testimonies")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", currentUser.id);
+
+    if (error) {
+      showTestimonyNote("Could not remove this testimony yet.", true);
+      return;
+    }
+
+    delete reactedTestimonies[id];
+    saveReactedTestimonies();
+    await loadTestimonies();
+    showTestimonyNote("Testimony removed.");
+    return;
+  }
+
+  testimonies = testimonies.filter((item) => item.id !== id);
+  delete reactedTestimonies[id];
+  saveReactedTestimonies();
+  renderTestimonies();
+  showTestimonyNote("Testimony removed.");
 };
 
 const signUp = async () => {
@@ -1249,12 +1126,16 @@ document.addEventListener("keydown", (event) => {
 
 testimonyList.addEventListener("click", async (event) => {
   const reactionButton = event.target.closest("[data-testimony-reaction]");
-  if (!reactionButton) return;
+  const deleteButton = event.target.closest("[data-delete-testimony]");
 
-  await reactToTestimony(
-    reactionButton.dataset.testimonyId,
-    reactionButton.dataset.testimonyReaction,
-  );
+  if (reactionButton) {
+    await reactToTestimony(
+      reactionButton.dataset.testimonyId,
+      reactionButton.dataset.testimonyReaction,
+    );
+  }
+
+  if (deleteButton) await deleteTestimony(deleteButton.dataset.deleteTestimony);
 });
 
 list.addEventListener("click", async (event) => {
@@ -1275,14 +1156,6 @@ list.addEventListener("click", async (event) => {
   if (nativeShareButton) await nativeShareRequest(nativeShareButton.dataset.nativeShare);
 });
 
-prayerGroupList.addEventListener("click", async (event) => {
-  const joinButton = event.target.closest("[data-join-group]");
-  const prayButton = event.target.closest("[data-pray-group]");
-
-  if (joinButton) await joinPrayerGroup(joinButton.dataset.joinGroup);
-  if (prayButton) await prayInPrayerGroup(prayButton.dataset.prayGroup);
-});
-
 const initialize = async () => {
   renderDailyVerse();
   await handleAuthRedirect();
@@ -1291,7 +1164,6 @@ const initialize = async () => {
   renderAuth();
   await loadRequests();
   await loadTestimonies();
-  await loadPrayerGroups();
   await renderEncouragements();
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
