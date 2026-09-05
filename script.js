@@ -179,6 +179,14 @@ const showTestimonyNote = (message, isError = false) => {
   testimonyNote.classList.toggle("error", isError);
 };
 
+const getAuthRedirectUrl = () => {
+  if (window.location.origin.startsWith("https://")) {
+    return `${window.location.origin}${window.location.pathname}`;
+  }
+
+  return "https://prayerpointcommunity.github.io/";
+};
+
 const timeAgo = (timestamp) => {
   const time = typeof timestamp === "number" ? timestamp : new Date(timestamp).getTime();
   const minutes = Math.max(1, Math.round((Date.now() - time) / 60000));
@@ -923,11 +931,11 @@ const signUp = async () => {
 
   showAuthStatus("Sending confirmation email. Please wait before trying again.");
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: "https://prayerpointcommunity.github.io/",
+      emailRedirectTo: getAuthRedirectUrl(),
     },
   });
 
@@ -937,6 +945,17 @@ const signUp = async () => {
       rateLimited
         ? "Please wait about 2 minutes before requesting another signup email."
         : error.message,
+      true,
+    );
+    return;
+  }
+
+  if (data.session) {
+    await supabase.auth.signOut();
+    currentUser = null;
+    renderAuth();
+    showAuthStatus(
+      "Signup is still letting people in immediately. Turn on email confirmations in Supabase, then try again.",
       true,
     );
     return;
