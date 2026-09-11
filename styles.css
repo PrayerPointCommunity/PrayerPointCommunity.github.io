@@ -1099,7 +1099,7 @@ footer {
     box-shadow: 0 -12px 34px rgba(31, 42, 45, 0.12);
     display: grid;
     gap: 4px;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     left: 0;
     padding: 8px 8px max(8px, env(safe-area-inset-bottom));
     position: fixed;
@@ -1107,8 +1107,7 @@ footer {
     z-index: 20;
   }
 
-  .mobile-tabbar a,
-  .mobile-tabbar button {
+  .mobile-tabbar a {
     align-items: center;
     background: transparent;
     border: 0;
@@ -1123,8 +1122,7 @@ footer {
     padding: 0 4px;
   }
 
-  .mobile-tabbar a:active,
-  .mobile-tabbar button:active {
+  .mobile-tabbar a:active {
     background: var(--soft);
   }
 
