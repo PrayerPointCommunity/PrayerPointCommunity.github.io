@@ -274,7 +274,7 @@ const renderAuth = () => {
   authPassword.disabled = signedIn && !resettingPassword;
   signUpButton.disabled = false;
   signUpButton.textContent = "Sign up";
-  accountToggleText.textContent = signedIn ? "Account" : "Sign in";
+  accountToggleText.textContent = signedIn ? "Account" : "Sign up / Log in";
   accountDot.classList.toggle("signed-in", signedIn);
   heroAuthPrompt.classList.toggle("hidden", signedIn);
   accountAlert.classList.add("hidden");
