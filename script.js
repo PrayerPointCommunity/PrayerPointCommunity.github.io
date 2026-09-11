@@ -90,6 +90,7 @@ const accountDot = document.querySelector("#account-dot");
 const accountAlert = document.querySelector("#account-alert");
 const accountPanel = document.querySelector("#account-panel");
 const accountClose = document.querySelector("#account-close");
+const heroAuthPrompt = document.querySelector("#hero-auth-prompt");
 const profileStatus = document.querySelector("#profile-status");
 const profileLoginState = document.querySelector("#profile-login-state");
 const profileEmail = document.querySelector("#profile-email");
@@ -186,7 +187,7 @@ const getAuthRedirectUrl = () => {
     return `${window.location.origin}${window.location.pathname}`;
   }
 
-  return "https://prayerpointcommunity.github.io/";
+  return "https://prayerpoint.online/";
 };
 
 const timeAgo = (timestamp) => {
@@ -267,8 +268,9 @@ const renderAuth = () => {
   authPassword.disabled = signedIn && !resettingPassword;
   signUpButton.disabled = false;
   signUpButton.textContent = "Sign up";
-  accountToggleText.textContent = signedIn ? "Account" : "Guest";
+  accountToggleText.textContent = signedIn ? "Account" : "Sign in";
   accountDot.classList.toggle("signed-in", signedIn);
+  heroAuthPrompt.classList.toggle("hidden", signedIn);
   accountAlert.classList.add("hidden");
   accountAlert.textContent = "0";
   inboxTitle.textContent = "Your encouragement";
@@ -1070,6 +1072,11 @@ const toggleAccountPanel = () => {
   }
 };
 
+const openAccountPanelFromPrompt = () => {
+  openAccountPanel();
+  authEmail.focus();
+};
+
 const removeEncouragement = async (id) => {
   if (!currentUser || !usingDatabase) return;
 
@@ -1126,6 +1133,9 @@ authForm.addEventListener("click", handleAuthAction);
 authForm.addEventListener("submit", (event) => event.preventDefault());
 accountToggle.addEventListener("click", toggleAccountPanel);
 accountClose.addEventListener("click", closeAccountPanel);
+document.querySelectorAll("[data-open-account-panel]").forEach((button) => {
+  button.addEventListener("click", openAccountPanelFromPrompt);
+});
 encouragementForm.addEventListener("submit", sendEncouragement);
 encouragementCancel.addEventListener("click", closeEncouragementDialog);
 
