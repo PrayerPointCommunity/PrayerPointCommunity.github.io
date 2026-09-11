@@ -173,9 +173,12 @@ nav a:hover {
   display: grid;
   gap: 18px;
   max-height: min(720px, calc(100vh - 96px));
+  overscroll-behavior: contain;
   overflow: auto;
   padding: 18px;
   position: fixed;
+  scroll-padding-bottom: 120px;
+  -webkit-overflow-scrolling: touch;
   right: clamp(14px, 4vw, 56px);
   top: 82px;
   width: min(920px, calc(100vw - 28px));
@@ -1054,7 +1057,9 @@ footer {
   }
 
   .account-panel {
-    max-height: calc(100vh - 142px);
+    max-height: calc(100dvh - 142px);
+    padding-bottom: max(130px, env(safe-area-inset-bottom));
+    scroll-padding-bottom: 150px;
     right: 14px;
     top: 130px;
   }

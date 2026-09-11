@@ -78,6 +78,7 @@ const blockedWords = [
 const storageKey = "prayer-circle-requests";
 const prayedStorageKey = "prayer-circle-prayed-requests";
 const testimonyReactionStorageKey = "prayer-circle-testimony-reactions";
+const readEncouragementStorageKey = "prayer-circle-read-encouragements";
 const list = document.querySelector("#prayer-list");
 const form = document.querySelector("#share");
 const filter = document.querySelector("#filter");
@@ -132,6 +133,8 @@ let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let encouragementRequestId = null;
+let readEncouragementIds = new Set(JSON.parse(localStorage.getItem(readEncouragementStorageKey) || "[]"));
+let latestReceivedEncouragementIds = [];
 
 const loadLocalRequests = () => {
   const saved = localStorage.getItem(storageKey);
@@ -148,6 +151,19 @@ const savePrayedRequestIds = () => {
 
 const saveReactedTestimonies = () => {
   localStorage.setItem(testimonyReactionStorageKey, JSON.stringify(reactedTestimonies));
+};
+
+const saveReadEncouragementIds = () => {
+  localStorage.setItem(readEncouragementStorageKey, JSON.stringify([...readEncouragementIds]));
+};
+
+const markEncouragementsAsRead = () => {
+  if (!latestReceivedEncouragementIds.length) return;
+
+  latestReceivedEncouragementIds.forEach((id) => readEncouragementIds.add(id));
+  saveReadEncouragementIds();
+  accountAlert.classList.add("hidden");
+  accountAlert.textContent = "0";
 };
 
 const escapeHtml = (value) =>
@@ -297,6 +313,7 @@ const renderAuth = () => {
 
 const renderEncouragements = async () => {
   if (!currentUser || !usingDatabase) {
+    latestReceivedEncouragementIds = [];
     accountAlert.classList.add("hidden");
     accountAlert.textContent = "0";
     inboxTitle.textContent = "Your encouragement";
@@ -312,6 +329,7 @@ const renderEncouragements = async () => {
     .limit(10);
 
   if (error) {
+    latestReceivedEncouragementIds = [];
     accountAlert.classList.add("hidden");
     accountAlert.textContent = "0";
     inboxTitle.textContent = "Your encouragement";
@@ -320,9 +338,12 @@ const renderEncouragements = async () => {
     return;
   }
 
-  const receivedCount = data.filter((item) => item.recipient_id === currentUser.id).length;
-  accountAlert.textContent = receivedCount > 9 ? "9+" : String(receivedCount);
-  accountAlert.classList.toggle("hidden", receivedCount === 0);
+  const receivedItems = data.filter((item) => item.recipient_id === currentUser.id);
+  const receivedCount = receivedItems.length;
+  latestReceivedEncouragementIds = receivedItems.map((item) => item.id);
+  const unreadCount = receivedItems.filter((item) => !readEncouragementIds.has(item.id)).length;
+  accountAlert.textContent = unreadCount > 9 ? "9+" : String(unreadCount);
+  accountAlert.classList.toggle("hidden", unreadCount === 0);
   inboxTitle.textContent =
     receivedCount === 0
       ? "Your encouragement"
@@ -352,6 +373,10 @@ const renderEncouragements = async () => {
       },
     )
     .join("");
+
+  if (!accountPanel.classList.contains("hidden")) {
+    markEncouragementsAsRead();
+  }
 };
 
 const renderRequests = () => {
@@ -1062,6 +1087,7 @@ const openAccountPanel = () => {
   accountPanel.classList.remove("hidden");
   accountToggle.setAttribute("aria-expanded", "true");
   document.body.classList.add("profile-open");
+  markEncouragementsAsRead();
 };
 
 const closeAccountPanel = () => {
