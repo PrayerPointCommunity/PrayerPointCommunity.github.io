@@ -164,6 +164,8 @@ const hasBlockedWords = (value) => {
   });
 };
 
+const countWords = (value) => value.trim().split(/\s+/).filter(Boolean).length;
+
 const showFormNote = (message, isError = false) => {
   formNote.textContent = message;
   formNote.classList.toggle("error", isError);
@@ -764,27 +766,41 @@ const sendEncouragement = async (event) => {
   const message = encouragementMessage.value.trim();
   if (!message) return;
 
+  if (countWords(message) > 1000) {
+    showEncouragementDialogNote("Please keep encouragement to 1000 words or less.", true);
+    return;
+  }
+
   if (hasBlockedWords(message)) {
     showEncouragementDialogNote("Please remove vulgar or offensive words before sending encouragement.", true);
     return;
   }
 
-  const senderName = currentUser.user_metadata?.display_name || "A PrayerPoint member";
-  const { error } = await supabase.from("encouragements").insert({
-    request_id: request.id,
-    recipient_id: request.userId,
-    sender_id: currentUser.id,
-    sender_name: senderName,
-    message: message.trim(),
-  });
+  if (request.userId === currentUser.id) {
+    showEncouragementDialogNote("This is your own prayer request, so encouragement is only sent to others.", true);
+    return;
+  }
 
-  if (error) {
+  const senderName = currentUser.user_metadata?.display_name || "A PrayerPoint member";
+  const { data, error } = await supabase
+    .from("encouragements")
+    .insert({
+      request_id: request.id,
+      recipient_id: request.userId,
+      sender_id: currentUser.id,
+      sender_name: senderName,
+      message,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
     showEncouragementDialogNote("Encouragement could not be sent yet. Check the Supabase setup.", true);
     return;
   }
 
   closeEncouragementDialog();
-  showFormNote("Your encouragement was sent privately.");
+  showFormNote("Your encouragement was sent to their PrayerPoint account.");
   await renderEncouragements();
 };
 
