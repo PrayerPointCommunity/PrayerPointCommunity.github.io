@@ -1121,7 +1121,7 @@ const closeAccountPanel = () => {
   accountPanel.classList.add("hidden");
   accountToggle.setAttribute("aria-expanded", "false");
   if (window.location.hash === "#account-panel") {
-    window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
+    window.history.pushState("", document.title, `${window.location.pathname}${window.location.search}`);
   }
   document.body.classList.remove("profile-open");
 };
@@ -1147,6 +1147,10 @@ window.addEventListener("hashchange", () => {
     openAccountPanel();
   }
 });
+
+if (window.location.hash === "#account-panel") {
+  openAccountPanel();
+}
 
 const removeEncouragement = async (id) => {
   if (!currentUser || !usingDatabase) return;

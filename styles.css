@@ -189,10 +189,6 @@ nav a:hover {
   z-index: 10;
 }
 
-.account-panel:target {
-  display: grid !important;
-}
-
 .account-panel-header {
   align-items: start;
   border-bottom: 1px solid var(--line);
