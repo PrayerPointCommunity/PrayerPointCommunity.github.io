@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint Admin</title>
-    <link rel="stylesheet" href="styles.css?v=20260912-admin" />
+    <link rel="stylesheet" href="styles.css?v=20260912-admin-video" />
   </head>
   <body class="admin-page">
     <main class="admin-shell">
@@ -70,6 +70,21 @@
         </section>
 
         <section class="admin-card">
+          <div>
+            <p class="eyebrow">Quiet Time</p>
+            <h2>Update the YouTube video</h2>
+          </div>
+          <form id="video-form" class="admin-focus-form">
+            <label>
+              YouTube link
+              <input id="video-input" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+            </label>
+            <button class="button primary" type="submit">Save video</button>
+          </form>
+          <p id="video-note" class="form-note"></p>
+        </section>
+
+        <section class="admin-card">
           <div class="admin-section-heading">
             <div>
               <p class="eyebrow">Prayer wall</p>
@@ -93,6 +108,6 @@
       </section>
     </main>
 
-    <script type="module" src="admin.js?v=20260912-admin"></script>
+    <script type="module" src="admin.js?v=20260912-admin-video"></script>
   </body>
 </html>

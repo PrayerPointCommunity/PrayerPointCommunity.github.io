@@ -25,6 +25,9 @@ const hiddenCount = document.querySelector("#admin-hidden-count");
 const focusForm = document.querySelector("#focus-form");
 const focusInput = document.querySelector("#focus-input");
 const focusNote = document.querySelector("#focus-note");
+const videoForm = document.querySelector("#video-form");
+const videoInput = document.querySelector("#video-input");
+const videoNote = document.querySelector("#video-note");
 
 let currentUser = null;
 let isAdmin = false;
@@ -50,6 +53,33 @@ const showStatus = (message, isError = false) => {
 const showFocusNote = (message, isError = false) => {
   focusNote.textContent = message;
   focusNote.classList.toggle("error", isError);
+};
+
+const showVideoNote = (message, isError = false) => {
+  videoNote.textContent = message;
+  videoNote.classList.toggle("error", isError);
+};
+
+const getYouTubeEmbedUrl = (value) => {
+  try {
+    const url = new URL(value.trim());
+    let videoId = "";
+
+    if (url.hostname.includes("youtu.be")) {
+      videoId = url.pathname.slice(1).split("/")[0];
+    } else if (url.hostname.includes("youtube.com")) {
+      if (url.pathname.startsWith("/embed/")) {
+        videoId = url.pathname.split("/embed/")[1].split("/")[0];
+      } else {
+        videoId = url.searchParams.get("v") || "";
+      }
+    }
+
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return "";
+    return `https://www.youtube.com/embed/${videoId}`;
+  } catch {
+    return "";
+  }
 };
 
 const timeAgo = (timestamp) => {
@@ -138,7 +168,7 @@ const loadAdminData = async () => {
       .select("id, display_name, message, love_count, celebrate_count, amen_count, is_hidden, created_at")
       .order("created_at", { ascending: false })
       .limit(60),
-    supabase.from("site_settings").select("value").eq("key", "daily_focus").maybeSingle(),
+    supabase.from("site_settings").select("key, value").in("key", ["daily_focus", "quiet_time_video"]),
   ]);
 
   if (prayers.error || testimonies.error) {
@@ -158,8 +188,10 @@ const loadAdminData = async () => {
     ? testimonyRows.map((item) => renderAdminItem(item, "testimony")).join("")
     : '<div class="empty-state">No testimonies yet.</div>';
 
-  if (!setting.error && setting.data?.value) {
-    focusInput.value = setting.data.value;
+  if (!setting.error) {
+    const settings = Object.fromEntries((setting.data || []).map((item) => [item.key, item.value]));
+    if (settings.daily_focus) focusInput.value = settings.daily_focus;
+    if (settings.quiet_time_video) videoInput.value = settings.quiet_time_video;
   }
 };
 
@@ -234,6 +266,28 @@ focusForm.addEventListener("submit", async (event) => {
   }
 
   showFocusNote("Daily focus saved.");
+});
+
+videoForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const embedUrl = getYouTubeEmbedUrl(videoInput.value);
+
+  if (!embedUrl) {
+    showVideoNote("Paste a valid YouTube video link first.", true);
+    return;
+  }
+
+  const { error } = await supabase
+    .from("site_settings")
+    .upsert({ key: "quiet_time_video", value: embedUrl, updated_at: new Date().toISOString() });
+
+  if (error) {
+    showVideoNote("Could not save the video yet. Check the Supabase admin SQL.", true);
+    return;
+  }
+
+  videoInput.value = embedUrl;
+  showVideoNote("Quiet Time video saved.");
 });
 
 document.addEventListener("click", async (event) => {

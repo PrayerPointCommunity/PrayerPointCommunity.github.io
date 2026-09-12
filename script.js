@@ -88,6 +88,7 @@ const prayerCount = document.querySelector("#prayer-count");
 const dailyVerseText = document.querySelector("#daily-verse-text");
 const dailyVerseReference = document.querySelector("#daily-verse-reference");
 const dailyFocusText = document.querySelector("#daily-focus-text");
+const quietVideo = document.querySelector("#quiet-video");
 const nameInput = document.querySelector("#name");
 const anonymousInput = document.querySelector("#post-anonymous");
 const openToConnectInput = document.querySelector("#open-to-connect");
@@ -286,12 +287,18 @@ const loadSiteSettings = async () => {
 
   const { data, error } = await supabase
     .from("site_settings")
-    .select("value")
-    .eq("key", "daily_focus")
-    .maybeSingle();
+    .select("key, value")
+    .in("key", ["daily_focus", "quiet_time_video"]);
 
-  if (!error && data?.value) {
-    dailyFocusText.textContent = data.value;
+  if (error) return;
+
+  const settings = Object.fromEntries((data || []).map((setting) => [setting.key, setting.value]));
+  if (settings.daily_focus) {
+    dailyFocusText.textContent = settings.daily_focus;
+  }
+
+  if (settings.quiet_time_video) {
+    quietVideo.src = settings.quiet_time_video;
   }
 };
 
