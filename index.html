@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260912-clean-mobile-tabs" />
+    <link rel="stylesheet" href="styles.css?v=20260912-mobile-auth-fix" />
   </head>
   <body>
     <header class="topbar">
@@ -126,8 +126,8 @@
           <div class="hero-auth-prompt" id="hero-auth-prompt">
             <p>Join PrayerPoint to share prayer points, pray for others, and receive encouragement.</p>
             <div>
-              <button class="button primary compact" type="button" data-open-account-panel>Sign up</button>
-              <button class="button secondary compact" type="button" data-open-account-panel>Log in</button>
+              <button class="button primary compact" type="button" data-open-account-panel onclick="window.openPrayerPointAccount?.(event)">Sign up</button>
+              <button class="button secondary compact" type="button" data-open-account-panel onclick="window.openPrayerPointAccount?.(event)">Log in</button>
             </div>
           </div>
         </div>
@@ -346,6 +346,6 @@
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260912-mobile-app"></script>
+    <script type="module" src="script.js?v=20260912-mobile-auth-fix"></script>
   </body>
 </html>

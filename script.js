@@ -1104,10 +1104,13 @@ const toggleAccountPanel = () => {
   }
 };
 
-const openAccountPanelFromPrompt = () => {
+const openAccountPanelFromPrompt = (event) => {
+  event?.preventDefault();
   openAccountPanel();
   authEmail.focus();
 };
+
+window.openPrayerPointAccount = openAccountPanelFromPrompt;
 
 const removeEncouragement = async (id) => {
   if (!currentUser || !usingDatabase) return;
@@ -1163,11 +1166,22 @@ testimonyForm.addEventListener("submit", submitTestimony);
 filter.addEventListener("change", renderRequests);
 authForm.addEventListener("click", handleAuthAction);
 authForm.addEventListener("submit", (event) => event.preventDefault());
+document.addEventListener("click", (event) => {
+  const accountPromptButton = event.target.closest("[data-open-account-panel]");
+  if (!accountPromptButton) return;
+
+  openAccountPanelFromPrompt(event);
+});
+
+document.addEventListener("touchend", (event) => {
+  const accountPromptButton = event.target.closest("[data-open-account-panel]");
+  if (!accountPromptButton) return;
+
+  openAccountPanelFromPrompt(event);
+});
+
 accountToggle.addEventListener("click", toggleAccountPanel);
 accountClose.addEventListener("click", closeAccountPanel);
-document.querySelectorAll("[data-open-account-panel]").forEach((button) => {
-  button.addEventListener("click", openAccountPanelFromPrompt);
-});
 encouragementForm.addEventListener("submit", sendEncouragement);
 encouragementCancel.addEventListener("click", closeEncouragementDialog);
 
