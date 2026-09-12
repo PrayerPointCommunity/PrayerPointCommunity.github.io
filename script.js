@@ -106,6 +106,7 @@ const authEmail = document.querySelector("#auth-email");
 const authPassword = document.querySelector("#auth-password");
 const signUpButton = document.querySelector("#sign-up-button");
 const logInButton = document.querySelector("#log-in-button");
+const forgotPasswordButton = document.querySelector("#forgot-password-button");
 const savePasswordButton = document.querySelector("#save-password-button");
 const signOutButton = document.querySelector("#sign-out-button");
 const authStatus = document.querySelector("#auth-status");
@@ -284,6 +285,7 @@ const renderAuth = () => {
   const userEmail = currentUser?.email || "";
   signUpButton.classList.toggle("hidden", signedIn || resettingPassword);
   logInButton.classList.toggle("hidden", signedIn || resettingPassword);
+  forgotPasswordButton.classList.toggle("hidden", signedIn || resettingPassword);
   savePasswordButton.classList.toggle("hidden", !resettingPassword);
   signOutButton.classList.toggle("hidden", !signedIn || resettingPassword);
   authEmail.disabled = signedIn;
@@ -1063,6 +1065,27 @@ const saveNewPassword = async () => {
   renderAuth();
 };
 
+const sendPasswordReset = async () => {
+  const email = authEmail.value.trim();
+
+  if (!email) {
+    showAuthStatus("Enter your email first, then press Forgot password.", true);
+    authEmail.focus();
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: getAuthRedirectUrl(),
+  });
+
+  if (error) {
+    showAuthStatus(error.message, true);
+    return;
+  }
+
+  showAuthStatus("Check your email for the password reset link.");
+};
+
 const signOut = async () => {
   await supabase.auth.signOut();
   currentUser = null;
@@ -1079,6 +1102,7 @@ const handleAuthAction = async (event) => {
 
   if (action === "sign-up") await signUp();
   if (action === "log-in") await logIn();
+  if (action === "forgot-password") await sendPasswordReset();
   if (action === "save-password") await saveNewPassword();
   if (action === "sign-out") await signOut();
 };

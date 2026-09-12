@@ -384,6 +384,20 @@ h2 {
   color: var(--teal-dark);
 }
 
+.text-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--teal-dark);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 800;
+  min-height: 42px;
+  padding: 0 4px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .button.full {
   width: 100%;
 }
@@ -1350,6 +1364,11 @@ footer {
   .testimony-reactions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .text-button {
+    justify-content: center;
+    width: 100%;
   }
 
   .testimony-list {
