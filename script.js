@@ -1110,6 +1110,9 @@ const handleAuthAction = async (event) => {
 const openAccountPanel = () => {
   accountPanel.classList.remove("hidden");
   accountToggle.setAttribute("aria-expanded", "true");
+  if (window.location.hash !== "#account-panel") {
+    window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}#account-panel`);
+  }
   document.body.classList.add("profile-open");
   markEncouragementsAsRead();
 };
@@ -1117,6 +1120,9 @@ const openAccountPanel = () => {
 const closeAccountPanel = () => {
   accountPanel.classList.add("hidden");
   accountToggle.setAttribute("aria-expanded", "false");
+  if (window.location.hash === "#account-panel") {
+    window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
+  }
   document.body.classList.remove("profile-open");
 };
 
@@ -1135,6 +1141,12 @@ const openAccountPanelFromPrompt = (event) => {
 };
 
 window.openPrayerPointAccount = openAccountPanelFromPrompt;
+
+window.addEventListener("hashchange", () => {
+  if (window.location.hash === "#account-panel") {
+    openAccountPanel();
+  }
+});
 
 const removeEncouragement = async (id) => {
   if (!currentUser || !usingDatabase) return;
