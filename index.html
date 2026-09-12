@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint</title>
-    <link rel="stylesheet" href="styles.css?v=20260912-admin-video" />
+    <link rel="stylesheet" href="styles.css?v=20260912-admin-tools" />
   </head>
   <body>
     <header class="topbar">
@@ -111,6 +111,11 @@
     </section>
 
     <main id="home">
+      <section id="announcement-banner" class="announcement-banner hidden" aria-label="PrayerPoint announcement">
+        <span>Announcement</span>
+        <p id="announcement-text"></p>
+      </section>
+
       <section class="hero" aria-labelledby="page-title">
         <div class="hero-copy">
           <p class="eyebrow">A calm space for faith and support</p>
@@ -341,12 +346,33 @@
           </div>
         </div>
       </section>
+
+      <section class="guidelines-band" aria-labelledby="guidelines-title">
+        <div>
+          <p class="eyebrow">Community care</p>
+          <h2 id="guidelines-title">A safer space for prayer</h2>
+        </div>
+        <div class="guidelines-list">
+          <article>
+            <strong>Protect privacy</strong>
+            <p>Do not share phone numbers, addresses, passwords, or private contact details.</p>
+          </article>
+          <article>
+            <strong>Keep it kind</strong>
+            <p>Encouragement should be gentle, respectful, and suitable for everyone.</p>
+          </article>
+          <article>
+            <strong>Share with wisdom</strong>
+            <p>Keep public posts simple and avoid details that could identify someone else.</p>
+          </article>
+        </div>
+      </section>
     </main>
 
     <footer>
       <p>PrayerPoint is a community space for prayer and encouragement.</p>
     </footer>
 
-    <script type="module" src="script.js?v=20260912-admin-video"></script>
+    <script type="module" src="script.js?v=20260912-admin-tools"></script>
   </body>
 </html>

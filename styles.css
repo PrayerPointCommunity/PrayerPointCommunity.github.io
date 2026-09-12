@@ -343,6 +343,29 @@ h2 {
   gap: 10px;
 }
 
+.announcement-banner {
+  align-items: center;
+  background: var(--teal-dark);
+  color: var(--white);
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding: 12px clamp(18px, 5vw, 72px);
+  text-align: center;
+}
+
+.announcement-banner span {
+  color: var(--gold);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.announcement-banner p {
+  line-height: 1.45;
+  margin: 0;
+}
+
 .button {
   align-items: center;
   border: 1px solid transparent;
@@ -575,6 +598,46 @@ h2 {
 
 .stats span {
   color: var(--muted);
+}
+
+.guidelines-band {
+  align-items: start;
+  background: #f3f7f1;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+  padding: 36px clamp(18px, 5vw, 72px);
+}
+
+.guidelines-band h2 {
+  color: var(--teal-dark);
+  font-family: var(--display-font);
+}
+
+.guidelines-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.guidelines-list article {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.guidelines-list strong {
+  color: var(--teal-dark);
+}
+
+.guidelines-list p {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
 }
 
 .auth-panel,
@@ -1186,12 +1249,48 @@ footer {
   gap: 8px;
 }
 
+.admin-log-list {
+  max-height: 420px;
+}
+
+.admin-log-item {
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px;
+}
+
+.admin-log-item strong {
+  color: var(--teal-dark);
+}
+
+.admin-log-item p,
+.admin-log-item span {
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.admin-log-item span {
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .hero,
   .daily-verse,
   .quiet-time-band,
   .workspace,
-  .testimony-band {
+  .testimony-band,
+  .guidelines-band {
+    grid-template-columns: 1fr;
+  }
+
+  .guidelines-list {
     grid-template-columns: 1fr;
   }
 
@@ -1581,7 +1680,8 @@ footer {
   }
 
   .admin-stats,
-  .admin-item {
+  .admin-item,
+  .admin-log-item {
     grid-template-columns: 1fr;
   }
 

@@ -19,12 +19,17 @@ const adminSignOut = document.querySelector("#admin-sign-out");
 const dashboard = document.querySelector("#admin-dashboard");
 const prayerList = document.querySelector("#admin-prayer-list");
 const testimonyList = document.querySelector("#admin-testimony-list");
+const logList = document.querySelector("#admin-log-list");
 const prayerCount = document.querySelector("#admin-prayer-count");
 const testimonyCount = document.querySelector("#admin-testimony-count");
 const hiddenCount = document.querySelector("#admin-hidden-count");
 const focusForm = document.querySelector("#focus-form");
 const focusInput = document.querySelector("#focus-input");
 const focusNote = document.querySelector("#focus-note");
+const announcementForm = document.querySelector("#announcement-form");
+const announcementInput = document.querySelector("#announcement-input");
+const announcementNote = document.querySelector("#announcement-note");
+const clearAnnouncement = document.querySelector("#clear-announcement");
 const videoForm = document.querySelector("#video-form");
 const videoInput = document.querySelector("#video-input");
 const videoNote = document.querySelector("#video-note");
@@ -53,6 +58,11 @@ const showStatus = (message, isError = false) => {
 const showFocusNote = (message, isError = false) => {
   focusNote.textContent = message;
   focusNote.classList.toggle("error", isError);
+};
+
+const showAnnouncementNote = (message, isError = false) => {
+  announcementNote.textContent = message;
+  announcementNote.classList.toggle("error", isError);
 };
 
 const showVideoNote = (message, isError = false) => {
@@ -154,10 +164,32 @@ const renderAdminItem = (item, type) => {
   `;
 };
 
+const addModerationLog = async (action, targetType, targetId, details = "") => {
+  if (!currentUser?.email || !isAdmin) return;
+
+  await supabase.from("moderation_logs").insert({
+    admin_email: currentUser.email.toLowerCase(),
+    action,
+    target_type: targetType,
+    target_id: targetId,
+    details,
+  });
+};
+
+const renderLogItem = (item) => `
+  <article class="admin-log-item">
+    <div>
+      <strong>${escapeHtml(item.action)}</strong>
+      <p>${escapeHtml(item.details || `${item.target_type || "setting"} updated`)}</p>
+    </div>
+    <span>${escapeHtml(item.admin_email || "Admin")} · ${timeAgo(item.created_at)}</span>
+  </article>
+`;
+
 const loadAdminData = async () => {
   if (!isAdmin) return;
 
-  const [prayers, testimonies, setting] = await Promise.all([
+  const [prayers, testimonies, setting, logs] = await Promise.all([
     supabase
       .from("prayer_requests")
       .select("id, display_name, category, message, prayers, is_hidden, created_at")
@@ -168,10 +200,15 @@ const loadAdminData = async () => {
       .select("id, display_name, message, love_count, celebrate_count, amen_count, is_hidden, created_at")
       .order("created_at", { ascending: false })
       .limit(60),
-    supabase.from("site_settings").select("key, value").in("key", ["daily_focus", "quiet_time_video"]),
+    supabase.from("site_settings").select("key, value").in("key", ["daily_focus", "quiet_time_video", "announcement"]),
+    supabase
+      .from("moderation_logs")
+      .select("admin_email, action, target_type, details, created_at")
+      .order("created_at", { ascending: false })
+      .limit(30),
   ]);
 
-  if (prayers.error || testimonies.error) {
+  if (prayers.error || testimonies.error || logs.error) {
     showStatus("Admin setup is not complete yet. Please run the Supabase admin SQL.", true);
     return;
   }
@@ -192,7 +229,12 @@ const loadAdminData = async () => {
     const settings = Object.fromEntries((setting.data || []).map((item) => [item.key, item.value]));
     if (settings.daily_focus) focusInput.value = settings.daily_focus;
     if (settings.quiet_time_video) videoInput.value = settings.quiet_time_video;
+    announcementInput.value = settings.announcement || "";
   }
+
+  logList.innerHTML = logs.data?.length
+    ? logs.data.map(renderLogItem).join("")
+    : '<div class="empty-state">No admin actions recorded yet.</div>';
 };
 
 const setHidden = async (table, id, hidden) => {
@@ -203,6 +245,8 @@ const setHidden = async (table, id, hidden) => {
     return;
   }
 
+  const targetType = table === "prayer_requests" ? "Prayer request" : "Testimony";
+  await addModerationLog(hidden ? "Hide" : "Restore", table, id, `${targetType} ${hidden ? "hidden" : "restored"}.`);
   await loadAdminData();
 };
 
@@ -217,6 +261,8 @@ const deleteItem = async (table, id) => {
     return;
   }
 
+  const targetType = table === "prayer_requests" ? "Prayer request" : "Testimony";
+  await addModerationLog("Delete", table, id, `${targetType} deleted.`);
   await loadAdminData();
 };
 
@@ -265,7 +311,31 @@ focusForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  await addModerationLog("Update focus", "site_settings", "daily_focus", `Daily focus changed to: ${value}`);
   showFocusNote("Daily focus saved.");
+});
+
+announcementForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const value = announcementInput.value.trim();
+
+  const { error } = await supabase
+    .from("site_settings")
+    .upsert({ key: "announcement", value, updated_at: new Date().toISOString() });
+
+  if (error) {
+    showAnnouncementNote("Could not save the banner yet. Check the Supabase admin SQL.", true);
+    return;
+  }
+
+  await addModerationLog("Update banner", "site_settings", "announcement", value ? `Banner changed to: ${value}` : "Banner cleared.");
+  showAnnouncementNote(value ? "Announcement banner saved." : "Announcement banner cleared.");
+  await loadAdminData();
+});
+
+clearAnnouncement.addEventListener("click", async () => {
+  announcementInput.value = "";
+  announcementForm.requestSubmit();
 });
 
 videoForm.addEventListener("submit", async (event) => {
@@ -287,6 +357,7 @@ videoForm.addEventListener("submit", async (event) => {
   }
 
   videoInput.value = embedUrl;
+  await addModerationLog("Update video", "site_settings", "quiet_time_video", `Quiet Time video changed to: ${embedUrl}`);
   showVideoNote("Quiet Time video saved.");
 });
 

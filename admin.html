@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrayerPoint Admin</title>
-    <link rel="stylesheet" href="styles.css?v=20260912-admin-video" />
+    <link rel="stylesheet" href="styles.css?v=20260912-admin-tools" />
   </head>
   <body class="admin-page">
     <main class="admin-shell">
@@ -71,6 +71,24 @@
 
         <section class="admin-card">
           <div>
+            <p class="eyebrow">Announcement</p>
+            <h2>Update the website banner</h2>
+          </div>
+          <form id="announcement-form" class="admin-focus-form">
+            <label>
+              Banner message
+              <input id="announcement-input" maxlength="180" placeholder="This week we are praying for peace and families." />
+            </label>
+            <div class="auth-actions">
+              <button class="button primary" type="submit">Save banner</button>
+              <button class="button outline" type="button" id="clear-announcement">Clear banner</button>
+            </div>
+          </form>
+          <p id="announcement-note" class="form-note"></p>
+        </section>
+
+        <section class="admin-card">
+          <div>
             <p class="eyebrow">Quiet Time</p>
             <h2>Update the YouTube video</h2>
           </div>
@@ -105,9 +123,20 @@
           </div>
           <div id="admin-testimony-list" class="admin-list"></div>
         </section>
+
+        <section class="admin-card">
+          <div class="admin-section-heading">
+            <div>
+              <p class="eyebrow">History</p>
+              <h2>Moderation log</h2>
+            </div>
+            <button class="button outline" type="button" data-refresh-admin>Refresh</button>
+          </div>
+          <div id="admin-log-list" class="admin-list admin-log-list"></div>
+        </section>
       </section>
     </main>
 
-    <script type="module" src="admin.js?v=20260912-admin-video"></script>
+    <script type="module" src="admin.js?v=20260912-admin-tools"></script>
   </body>
 </html>

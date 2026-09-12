@@ -89,6 +89,8 @@ const dailyVerseText = document.querySelector("#daily-verse-text");
 const dailyVerseReference = document.querySelector("#daily-verse-reference");
 const dailyFocusText = document.querySelector("#daily-focus-text");
 const quietVideo = document.querySelector("#quiet-video");
+const announcementBanner = document.querySelector("#announcement-banner");
+const announcementText = document.querySelector("#announcement-text");
 const nameInput = document.querySelector("#name");
 const anonymousInput = document.querySelector("#post-anonymous");
 const openToConnectInput = document.querySelector("#open-to-connect");
@@ -288,7 +290,7 @@ const loadSiteSettings = async () => {
   const { data, error } = await supabase
     .from("site_settings")
     .select("key, value")
-    .in("key", ["daily_focus", "quiet_time_video"]);
+    .in("key", ["daily_focus", "quiet_time_video", "announcement"]);
 
   if (error) return;
 
@@ -299,6 +301,13 @@ const loadSiteSettings = async () => {
 
   if (settings.quiet_time_video) {
     quietVideo.src = settings.quiet_time_video;
+  }
+
+  if (settings.announcement) {
+    announcementText.textContent = settings.announcement;
+    announcementBanner.classList.remove("hidden");
+  } else {
+    announcementBanner.classList.add("hidden");
   }
 };
 
