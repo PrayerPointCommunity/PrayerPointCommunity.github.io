@@ -1137,7 +1137,6 @@ const toggleAccountPanel = () => {
 const openAccountPanelFromPrompt = (event) => {
   event?.preventDefault();
   openAccountPanel();
-  authEmail.focus();
 };
 
 window.openPrayerPointAccount = openAccountPanelFromPrompt;
