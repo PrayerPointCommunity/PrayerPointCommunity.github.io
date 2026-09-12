@@ -809,6 +809,10 @@ input:disabled {
   display: none !important;
 }
 
+#account-panel:target {
+  display: grid !important;
+}
+
 .requests-panel {
   min-height: 620px;
 }
@@ -883,14 +887,18 @@ input:disabled {
 }
 
 .ghost-button {
+  align-items: center;
   background: transparent;
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--teal-dark);
   cursor: pointer;
+  display: inline-flex;
   font-weight: 800;
+  justify-content: center;
   min-height: 40px;
   padding: 0 13px;
+  text-decoration: none;
 }
 
 .danger-button {
