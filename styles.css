@@ -1229,14 +1229,33 @@ footer {
     grid-column: 1 / -1;
   }
 
+  .hero-auth-prompt {
+    background: rgba(251, 251, 247, 0.94);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 12px 30px rgba(18, 71, 72, 0.18);
+    color: var(--ink);
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px;
+  }
+
+  .hero-auth-prompt p {
+    color: var(--ink);
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
   .hero-auth-prompt div {
     display: grid;
-    grid-template-columns: 1fr;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
 
-  .hero-auth-prompt {
-    display: none;
+  .hero-auth-prompt .button {
+    min-height: 40px;
+    width: 100%;
   }
 
   .prayer-focus {
