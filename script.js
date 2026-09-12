@@ -87,6 +87,7 @@ const requestCount = document.querySelector("#request-count");
 const prayerCount = document.querySelector("#prayer-count");
 const dailyVerseText = document.querySelector("#daily-verse-text");
 const dailyVerseReference = document.querySelector("#daily-verse-reference");
+const dailyFocusText = document.querySelector("#daily-focus-text");
 const nameInput = document.querySelector("#name");
 const anonymousInput = document.querySelector("#post-anonymous");
 const openToConnectInput = document.querySelector("#open-to-connect");
@@ -278,6 +279,20 @@ const renderDailyVerse = () => {
   const verse = dailyVerses[dayNumber % dailyVerses.length];
   dailyVerseText.textContent = verse.text;
   dailyVerseReference.textContent = verse.reference;
+};
+
+const loadSiteSettings = async () => {
+  if (!usingDatabase) return;
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "daily_focus")
+    .maybeSingle();
+
+  if (!error && data?.value) {
+    dailyFocusText.textContent = data.value;
+  }
 };
 
 const renderAuth = () => {
@@ -523,11 +538,25 @@ const loadRequests = async () => {
     return;
   }
 
-  const { data, error } = await supabase
+  const requestColumns =
+    "id, user_id, display_name, category, message, open_to_connect, prayers, created_at, expires_at";
+  const activeCutoff = new Date().toISOString();
+  let { data, error } = await supabase
     .from("prayer_requests")
-    .select("id, user_id, display_name, category, message, open_to_connect, prayers, created_at, expires_at")
-    .gt("expires_at", new Date().toISOString())
+    .select(`${requestColumns}, is_hidden`)
+    .eq("is_hidden", false)
+    .gt("expires_at", activeCutoff)
     .order("created_at", { ascending: false });
+
+  if (error && error.message.toLowerCase().includes("is_hidden")) {
+    const fallback = await supabase
+      .from("prayer_requests")
+      .select(requestColumns)
+      .gt("expires_at", activeCutoff)
+      .order("created_at", { ascending: false });
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     usingDatabase = false;
@@ -547,12 +576,27 @@ const loadTestimonies = async () => {
     return;
   }
 
-  const { data, error } = await supabase
+  const testimonyColumns =
+    "id, user_id, display_name, message, love_count, celebrate_count, amen_count, created_at, expires_at";
+  const activeCutoff = new Date().toISOString();
+  let { data, error } = await supabase
     .from("testimonies")
-    .select("id, user_id, display_name, message, love_count, celebrate_count, amen_count, created_at, expires_at")
-    .gt("expires_at", new Date().toISOString())
+    .select(`${testimonyColumns}, is_hidden`)
+    .eq("is_hidden", false)
+    .gt("expires_at", activeCutoff)
     .order("created_at", { ascending: false })
     .limit(20);
+
+  if (error && error.message.toLowerCase().includes("is_hidden")) {
+    const fallback = await supabase
+      .from("testimonies")
+      .select(testimonyColumns)
+      .gt("expires_at", activeCutoff)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     testimonies = [];
@@ -1293,6 +1337,7 @@ const initialize = async () => {
   const { data } = await supabase.auth.getSession();
   currentUser = data.session?.user || null;
   renderAuth();
+  await loadSiteSettings();
   await loadRequests();
   await loadTestimonies();
   await renderEncouragements();

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrayerPoint Admin</title>
+    <link rel="stylesheet" href="styles.css?v=20260912-admin" />
+  </head>
+  <body class="admin-page">
+    <main class="admin-shell">
+      <section class="admin-hero">
+        <div>
+          <p class="eyebrow">Admin</p>
+          <h1>PrayerPoint control room</h1>
+          <p>Manage duplicated posts, hide content from the wall, restore hidden items, and update the daily focus.</p>
+        </div>
+        <a class="button outline" href="index.html">Back to website</a>
+      </section>
+
+      <section class="admin-card" id="admin-auth-card">
+        <div>
+          <h2>Admin sign in</h2>
+          <p id="admin-status" class="form-note">Sign in with your approved admin email.</p>
+        </div>
+        <form id="admin-auth-form" class="admin-auth-form">
+          <label>
+            Email
+            <input id="admin-email" type="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input id="admin-password" type="password" placeholder="Your password" required />
+          </label>
+          <div class="auth-actions">
+            <button class="button primary" type="submit">Sign in</button>
+            <button class="button outline hidden" type="button" id="admin-sign-out">Sign out</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-dashboard hidden" id="admin-dashboard">
+        <div class="admin-stats" aria-label="Admin overview">
+          <div>
+            <strong id="admin-prayer-count">0</strong>
+            <span>Prayer requests</span>
+          </div>
+          <div>
+            <strong id="admin-testimony-count">0</strong>
+            <span>Testimonies</span>
+          </div>
+          <div>
+            <strong id="admin-hidden-count">0</strong>
+            <span>Hidden items</span>
+          </div>
+        </div>
+
+        <section class="admin-card">
+          <div>
+            <p class="eyebrow">Daily focus</p>
+            <h2>Update the focus message</h2>
+          </div>
+          <form id="focus-form" class="admin-focus-form">
+            <label>
+              Focus text
+              <input id="focus-input" maxlength="140" placeholder="Peace, healing, provision, and renewed hope." />
+            </label>
+            <button class="button primary" type="submit">Save focus</button>
+          </form>
+          <p id="focus-note" class="form-note"></p>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-section-heading">
+            <div>
+              <p class="eyebrow">Prayer wall</p>
+              <h2>Manage prayer requests</h2>
+            </div>
+            <button class="button outline" type="button" data-refresh-admin>Refresh</button>
+          </div>
+          <div id="admin-prayer-list" class="admin-list"></div>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-section-heading">
+            <div>
+              <p class="eyebrow">Testimonial wall</p>
+              <h2>Manage testimonies</h2>
+            </div>
+            <button class="button outline" type="button" data-refresh-admin>Refresh</button>
+          </div>
+          <div id="admin-testimony-list" class="admin-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="admin.js?v=20260912-admin"></script>
+  </body>
+</html>
