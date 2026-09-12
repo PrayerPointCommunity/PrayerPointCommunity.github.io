@@ -1239,7 +1239,8 @@ document.addEventListener("click", (event) => {
   if (
     accountPanel.classList.contains("hidden") ||
     accountPanel.contains(event.target) ||
-    accountToggle.contains(event.target)
+    accountToggle.contains(event.target) ||
+    event.target.closest("[data-open-account-panel]")
   ) {
     return;
   }
