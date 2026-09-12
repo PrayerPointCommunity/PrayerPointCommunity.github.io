@@ -50,6 +50,16 @@ const dailyVerses = [
   { text: "The Lord bless thee, and keep thee.", reference: "Numbers 6:24" },
 ];
 
+const dailyFocuses = [
+  "Peace, healing, provision, and renewed hope.",
+  "Families, forgiveness, and restored relationships.",
+  "Strength for those who feel tired or overwhelmed.",
+  "Wisdom, guidance, and clear direction.",
+  "Protection, courage, and a steady heart.",
+  "Comfort for those grieving or waiting.",
+  "Faith, hope, and deeper trust in God.",
+];
+
 const blockedWords = [
   "arse",
   "asshole",
@@ -280,8 +290,10 @@ const updateStats = () => {
 const renderDailyVerse = () => {
   const dayNumber = Math.floor(Date.now() / 86400000);
   const verse = dailyVerses[dayNumber % dailyVerses.length];
+  const focus = dailyFocuses[dayNumber % dailyFocuses.length];
   dailyVerseText.textContent = verse.text;
   dailyVerseReference.textContent = verse.reference;
+  dailyFocusText.textContent = focus;
 };
 
 const loadSiteSettings = async () => {
@@ -295,7 +307,7 @@ const loadSiteSettings = async () => {
   if (error) return;
 
   const settings = Object.fromEntries((data || []).map((setting) => [setting.key, setting.value]));
-  if (settings.daily_focus) {
+  if (settings.daily_focus?.trim()) {
     dailyFocusText.textContent = settings.daily_focus;
   }
 

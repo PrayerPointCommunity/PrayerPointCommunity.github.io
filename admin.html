@@ -62,9 +62,12 @@
           <form id="focus-form" class="admin-focus-form">
             <label>
               Focus text
-              <input id="focus-input" maxlength="140" placeholder="Peace, healing, provision, and renewed hope." />
+              <input id="focus-input" maxlength="140" placeholder="Leave empty to use the automatic daily focus" />
             </label>
-            <button class="button primary" type="submit">Save focus</button>
+            <div class="auth-actions">
+              <button class="button primary" type="submit">Save focus</button>
+              <button class="button outline" type="button" id="clear-focus">Use automatic focus</button>
+            </div>
           </form>
           <p id="focus-note" class="form-note"></p>
         </section>

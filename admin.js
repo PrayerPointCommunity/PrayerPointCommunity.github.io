@@ -26,6 +26,7 @@ const hiddenCount = document.querySelector("#admin-hidden-count");
 const focusForm = document.querySelector("#focus-form");
 const focusInput = document.querySelector("#focus-input");
 const focusNote = document.querySelector("#focus-note");
+const clearFocus = document.querySelector("#clear-focus");
 const announcementForm = document.querySelector("#announcement-form");
 const announcementInput = document.querySelector("#announcement-input");
 const announcementNote = document.querySelector("#announcement-note");
@@ -297,11 +298,6 @@ focusForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const value = focusInput.value.trim();
 
-  if (!value) {
-    showFocusNote("Add a short focus message first.", true);
-    return;
-  }
-
   const { error } = await supabase
     .from("site_settings")
     .upsert({ key: "daily_focus", value, updated_at: new Date().toISOString() });
@@ -311,8 +307,14 @@ focusForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  await addModerationLog("Update focus", "site_settings", "daily_focus", `Daily focus changed to: ${value}`);
-  showFocusNote("Daily focus saved.");
+  await addModerationLog("Update focus", "site_settings", "daily_focus", value ? `Daily focus changed to: ${value}` : "Daily focus returned to automatic.");
+  showFocusNote(value ? "Daily focus saved." : "Automatic daily focus is now active.");
+  await loadAdminData();
+});
+
+clearFocus.addEventListener("click", async () => {
+  focusInput.value = "";
+  focusForm.requestSubmit();
 });
 
 announcementForm.addEventListener("submit", async (event) => {
