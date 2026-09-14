@@ -151,6 +151,7 @@ let resettingPassword = false;
 let prayedRequestIds = new Set(JSON.parse(localStorage.getItem(prayedStorageKey) || "[]"));
 let reactedTestimonies = JSON.parse(localStorage.getItem(testimonyReactionStorageKey) || "{}");
 let encouragementRequestId = null;
+let sendingEncouragement = false;
 let readEncouragementIds = new Set(JSON.parse(localStorage.getItem(readEncouragementStorageKey) || "[]"));
 let latestReceivedEncouragementIds = [];
 
@@ -863,6 +864,8 @@ const openEncouragementDialog = (id) => {
 
 const sendEncouragement = async (event) => {
   event.preventDefault();
+  if (sendingEncouragement) return;
+
   const request = requests.find((item) => item.id === encouragementRequestId);
   if (!request) {
     closeEncouragementDialog();
@@ -887,6 +890,13 @@ const sendEncouragement = async (event) => {
     return;
   }
 
+  sendingEncouragement = true;
+  const submitButton = encouragementForm.querySelector('button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Sending...";
+  }
+
   const senderName = currentUser.user_metadata?.display_name || "A PrayerPoint member";
   const { data, error } = await supabase
     .from("encouragements")
@@ -901,10 +911,28 @@ const sendEncouragement = async (event) => {
     .single();
 
   if (error || !data) {
-    showEncouragementDialogNote("Encouragement could not be sent yet. Check the Supabase setup.", true);
+    const message = (error?.message || "").toLowerCase();
+    const isPolicyError = message.includes("row-level security") || message.includes("violates row-level security");
+    const isRelationError = message.includes("relation") || message.includes("schema cache");
+    const detail = isPolicyError
+      ? "This prayer may be closed, expired, anonymous, or missing its owner account. Please try another request."
+      : isRelationError
+        ? "The encouragement table needs the latest Supabase SQL."
+        : error?.message || "Please try again in a moment.";
+    showEncouragementDialogNote(`Encouragement could not be sent. ${detail}`, true);
+    sendingEncouragement = false;
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Send encouragement";
+    }
     return;
   }
 
+  sendingEncouragement = false;
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.textContent = "Send encouragement";
+  }
   closeEncouragementDialog();
   showFormNote("Your encouragement was sent to their PrayerPoint account.");
   await renderEncouragements();
