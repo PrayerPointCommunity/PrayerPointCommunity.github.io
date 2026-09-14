@@ -2,11 +2,14 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = "https://mufssprelgsroumvmrfk.supabase.co";
 const supabaseKey = "sb_publishable_aTOd54VsmDOAJVBssxtrug_nV1_Vhas";
+const canonicalSiteUrl = "https://prayerpoint.online/";
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: "pkce",
+    storageKey: "prayerpoint-auth-session",
   },
 });
 
@@ -220,11 +223,7 @@ const showTestimonyNote = (message, isError = false) => {
 };
 
 const getAuthRedirectUrl = () => {
-  if (window.location.origin.startsWith("https://")) {
-    return `${window.location.origin}${window.location.pathname}`;
-  }
-
-  return "https://prayerpoint.online/";
+  return canonicalSiteUrl;
 };
 
 const timeAgo = (timestamp) => {
@@ -1179,6 +1178,14 @@ const handleAuthAction = async (event) => {
   if (action === "sign-out") await signOut();
 };
 
+const syncCurrentSession = async () => {
+  const { data } = await supabase.auth.getSession();
+  currentUser = data.session?.user || null;
+  renderAuth();
+  await renderEncouragements();
+  return currentUser;
+};
+
 const openAccountPanel = () => {
   accountPanel.classList.remove("hidden");
   accountToggle.setAttribute("aria-expanded", "true");
@@ -1241,12 +1248,21 @@ const removeEncouragement = async (id) => {
 
 const handleAuthRedirect = async () => {
   const params = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const code = params.get("code");
-  const type = params.get("type");
+  const type = params.get("type") || hashParams.get("type");
+  const linkError = params.get("error_description") || hashParams.get("error_description");
 
-  if (!code) return;
+  if (linkError) {
+    showAuthStatus(linkError.replace(/\+/g, " "), true);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return;
+  }
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (!code && !hashParams.get("access_token")) return;
+
+  const { error } = code ? await supabase.auth.exchangeCodeForSession(code) : { error: null };
+  await syncCurrentSession();
 
   if (error) {
     showAuthStatus("This link was opened. Please log in or request a fresh password reset.", true);
@@ -1362,13 +1378,10 @@ list.addEventListener("click", async (event) => {
 const initialize = async () => {
   renderDailyVerse();
   await handleAuthRedirect();
-  const { data } = await supabase.auth.getSession();
-  currentUser = data.session?.user || null;
-  renderAuth();
+  await syncCurrentSession();
   await loadSiteSettings();
   await loadRequests();
   await loadTestimonies();
-  await renderEncouragements();
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user || null;
@@ -1378,3 +1391,13 @@ const initialize = async () => {
 };
 
 initialize();
+
+window.addEventListener("pageshow", () => {
+  syncCurrentSession();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    syncCurrentSession();
+  }
+});
